@@ -1,0 +1,7 @@
+config/hardconfig.json
+config/softconfig.json
+node_modules
+cache.json
+*.log
+.env
+db.sqlite

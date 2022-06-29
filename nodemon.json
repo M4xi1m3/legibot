@@ -1,0 +1,7 @@
+{
+    "verbose": true,
+    "ignore": [
+        "**.json",
+        "**.sqlite"
+    ]
+}
