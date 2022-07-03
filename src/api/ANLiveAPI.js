@@ -18,12 +18,21 @@
  */
 
 import axios from 'axios';
+import { XMLParser } from 'fast-xml-parser';
+import Cache from '../utils/Cache.js';
 import Logger from '../utils/Logger.js';
 
 
 class ANLiveAPI {
     constructor() {
         this.__logger = Logger.getLogger("AnApi");
+        this.__parser = new XMLParser({
+            processEntities: false, htmlEntities: false, ignorePiTags: true, isArray: (name, jpath, isLeafNode, isAttribute) => {
+                return [
+                    'editorial.diffusion'
+                ].indexOf(jpath) !== -1;
+            }
+        });
     }
 
     async __request(method, path, data) {
@@ -52,8 +61,49 @@ class ANLiveAPI {
         }
     }
 
-    async edito() {
+    async load_live() {
+        return await this.__request("GET", "https://videos.assemblee-nationale.fr/live/live.txt");
+    }
+
+    async live() {
+        return await Cache.cache('an.live', 5 * 60, async () => {
+            let data = [];
+            const res = await this.load_live();
+
+            if (!res.good) {
+                return { error: true };
+            } else {
+                for (const line of res.data.split("\n")) {
+                    const [flux, media] = line.split(" ");
+                    data.push({
+                        flux,
+                        media
+                    });
+                }
+                return { error: false, data };
+            }
+        });
+    }
+
+    async load_edito() {
         return await this.__request("GET", `https://videos.assemblee-nationale.fr/php/getedito.php`);
+    }
+
+    async edito() {
+        return await Cache.cache('an.edito', 5 * 60, async () => {
+            const res = await this.load_edito();
+
+            if (!res.good) {
+                return { error: true };
+            } else {
+                const parsed = this.__parser.parse(res.data);
+
+                return {
+                    error: false,
+                    ...(parsed.editorial)
+                };
+            }
+        });
     }
 }
 

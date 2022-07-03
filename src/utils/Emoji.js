@@ -17,7 +17,7 @@
  * along with AN-BOT.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-class Emoji {
+class __Emoji {
     constructor () {
         this.yes = "✅";
         this.no = "❎";
@@ -31,5 +31,5 @@ class Emoji {
     }
 }
 
-const instance = new Emoji();
-export default instance;
+const Emoji = new __Emoji();
+export default Emoji;

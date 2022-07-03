@@ -27,7 +27,7 @@ import HardConfig from './config/HardConfig.js';
 import SoftConfig from './config/SoftConfig.js';
 import loggers from './utils/Logger.js';
 
-class Bot {
+class __Bot {
     constructor() {
         this.__logger = loggers.getLogger("Bot");
         this.__token = HardConfig.getBotToken();
@@ -200,11 +200,20 @@ class Bot {
     }
 
     async initClient() {
-        this.__client = new Client({ intents: ["DIRECT_MESSAGES"] });
+        this.__client = new Client({ intents: ["DIRECT_MESSAGES", "GUILD_VOICE_STATES"] });
 
         this.__client.on('ready', this.onReady.bind(this));
         this.__client.on('interactionCreate', this.onInteraction.bind(this));
         this.__client.on('messageCreate', this.onMessage.bind(this));
+        this.__client.on('voiceStateUpdate', (oldState, newState) => {
+            const guild = oldState.guild;
+            const channel = guild.channels.cache.find(channel => (channel.type === 'voice' && channel.members.has(Client.user.id)))
+            if (channel !== undefined) {
+                if (channel.members.size <= 1) {
+                    console.log("must leave!!!");
+                }
+            }
+        });
     }
 
     start() {
@@ -220,4 +229,5 @@ class Bot {
     }
 }
 
-export default new Bot();
+const Bot = new __Bot();
+export default Bot;

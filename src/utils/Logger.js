@@ -22,7 +22,7 @@ import process from "process";
 /**
  * Logger, used to log things.
  */
-class Logger {
+class __Logger {
     /**
      * Construct a new logger
      * 
@@ -78,19 +78,19 @@ class Logger {
     }
 }
 
-class Loggers {
+class __Loggers {
     constructor() {
         this.__loggers = {};
     }
 
     getLogger(name) {
         if (!(name in this.__loggers)) {
-            this.__loggers[name] = new Logger(name);
+            this.__loggers[name] = new __Logger(name);
         }
 
         return this.__loggers[name];
     }
 }
 
-const loggers = new Loggers();
-export default loggers;
+const Logger = new __Loggers();
+export default Logger;

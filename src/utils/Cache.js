@@ -20,7 +20,7 @@
 import fs from 'fs';
 import Logger from './Logger.js';
 
-class Cache {
+class __Cache {
     constructor() {
         this.__logger = Logger.getLogger("Cache");
     }
@@ -113,5 +113,5 @@ class Cache {
     }
 }
 
-const instance = new Cache();
-export default instance;
+const Cache = new __Cache();
+export default Cache;

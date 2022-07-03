@@ -17,7 +17,7 @@
  * along with AN-BOT.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-class Messages {
+class __Messages {
     constructor() {
     }
 
@@ -73,5 +73,5 @@ class Messages {
     }
 }
 
-const instance = new Messages();
-export default instance;
+const Messages = new __Messages();
+export default Messages;
