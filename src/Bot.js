@@ -25,6 +25,7 @@ import path from 'path';
 import url from 'url';
 import HardConfig from './config/HardConfig.js';
 import SoftConfig from './config/SoftConfig.js';
+import Audio from './utils/Audio.js';
 import loggers from './utils/Logger.js';
 
 class __Bot {
@@ -173,12 +174,12 @@ class __Bot {
                 await this.__callWithErrorHandl(this.__commands[interaction.commandName].execute.bind(this.__commands[interaction.commandName]), interaction, "commande");
             }
         } else if (interaction.isButton()) {
-            if (this.__buttons[interaction.customId] !== undefined) {
-                await this.__callWithErrorHandl(this.__buttons[interaction.customId].bind(this.__buttons[interaction.customId]), interaction, "boutton");
+            if (this.__buttons[interaction.customId.split(",")[0]] !== undefined) {
+                await this.__callWithErrorHandl(this.__buttons[interaction.customId.split(",")[0]].bind(this.__buttons[interaction.customId.split(",")[0]]), interaction, "boutton");
             }
         } else if (interaction.isSelectMenu()) {
-            if (this.__selects[interaction.customId] !== undefined) {
-                await this.__callWithErrorHandl(this.__selects[interaction.customId].bind(this.__selects[interaction.customId]), interaction, "sélecteur");
+            if (this.__selects[interaction.customId.split(",")[0]] !== undefined) {
+                await this.__callWithErrorHandl(this.__selects[interaction.customId.split(",")[0]].bind(this.__selects[interaction.customId.split(",")[0]]), interaction, "sélecteur");
             }
         }
     }
@@ -187,30 +188,35 @@ class __Bot {
         try {
             await fnc(interaction);
         } catch (e) {
-            this.__logger.error("Error when handling " + type + " \"" + (interaction.commandName ?? interaction.customId) + "\"", e);
+            this.__logger.error("Error when handling " + type + " \"" + (interaction.commandName ?? interaction.customId.split(",")[0]) + "\"", e);
             try {
                 if (interaction.deferred)
                     interaction.editReply({ content: "Une erreur est survenue lors du traitement de votre " + type + "." });
                 else
                     interaction.reply({ content: "Une erreur est survenue lors du traitement de votre " + type + ".", ephemeral: true });
             } catch (e) {
-                this.__logger.error("Error when handling error of " + type + " \"" + (interaction.commandName ?? interaction.customId) + "\"", e);
+                this.__logger.error("Error when handling error of " + type + " \"" + (interaction.commandName ?? interaction.customId.split(",")[0]) + "\"", e);
             }
         }
     }
 
     async initClient() {
-        this.__client = new Client({ intents: ["DIRECT_MESSAGES", "GUILD_VOICE_STATES"] });
+        this.__client = new Client({ intents: ["DIRECT_MESSAGES", "GUILD_VOICE_STATES"], partials: ['CHANNEL'] });
 
         this.__client.on('ready', this.onReady.bind(this));
         this.__client.on('interactionCreate', this.onInteraction.bind(this));
         this.__client.on('messageCreate', this.onMessage.bind(this));
-        this.__client.on('voiceStateUpdate', (oldState, newState) => {
+        this.__client.on('voiceStateUpdate', async (oldState, newState) => {
             const guild = oldState.guild;
-            const channel = guild.channels.cache.find(channel => (channel.type === 'voice' && channel.members.has(Client.user.id)))
-            if (channel !== undefined) {
+
+
+            let channels = await guild.channels.fetch();
+            channels = channels.filter(channel => (channel.type === 'GUILD_VOICE' && channel.members.has(guild.client.user.id)))
+
+            if (channels.size !== 0) {
+                const channel = channels.first();
                 if (channel.members.size <= 1) {
-                    console.log("must leave!!!");
+                    Audio.leave(guild.id);
                 }
             }
         });
