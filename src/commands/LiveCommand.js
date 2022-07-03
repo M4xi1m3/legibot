@@ -23,6 +23,7 @@ import Command from '../Command.js';
 import { MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from 'discord.js';
 import { decode } from 'html-entities';
 import Bot from '../Bot.js';
+import Audio from '../utils/Audio.js';
 
 class LiveCommand extends Command {
     constructor() {
@@ -94,7 +95,7 @@ class LiveCommand extends Command {
                 .setPlaceholder("Séance")
                 .addOptions(this.__getSelectable(live, edito))
         ), new MessageActionRow().addComponents(
-            new MessageButton().setCustomId("live_listen")
+            new MessageButton().setCustomId("live_listen," + selected)
                 .setLabel("Écouter")
                 .setStyle("PRIMARY")
                 .setDisabled(selected === null)
@@ -104,7 +105,20 @@ class LiveCommand extends Command {
     }
 
     async listenSeance(interaction) {
-        interaction.reply({content: "WIP"});
+        if (interaction.member.voice.channelId === null) {
+            interaction.reply({ content: "Vous devez être dans un canal vocal !" });
+            return;
+        }
+
+        let flux = interaction.customId.split(",")[1];
+        
+        Audio.playStream(`https://videos.assemblee-nationale.fr/live/live${flux}/playlist${flux}.m3u8`, {
+            channelId: interaction.member.voice.channelId,
+            guildId: interaction.member.guild.id,
+            adapterCreator: interaction.member.guild.voiceAdapterCreator,
+        });
+
+        interaction.reply({content: "J'arrive ^^", ephemeral: true});
     }
 
     async selectSeance(interaction) {
