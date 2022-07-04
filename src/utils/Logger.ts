@@ -69,12 +69,12 @@ class Log {
         this.write(message, 'WARN', console.warn);
     }
 
-    public error(message: string, error: Error): void {
+    public error(message: string, error?: Error): void {
         this.write(message, 'ERR!', console.error);
         if (error !== undefined && error.stack !== undefined) this.write(error.stack, 'ERR!', console.error);
     }
 
-    public fatal(message: string, error: Error, code: number): void {
+    public fatal(message: string, error?: Error , code?: number): void {
         this.write(message, 'FTAL', console.error);
         if (error !== undefined && error.stack !== undefined) this.write(error.stack, 'FTAL', console.error);
         process.exit(code !== undefined ? code : -1);

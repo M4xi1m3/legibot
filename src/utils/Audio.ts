@@ -98,6 +98,8 @@ class AudioManager {
                 this.leave(params.guildId);
             }
         });
+
+        this.clean();
     }
 }
 
