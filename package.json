@@ -1,21 +1,44 @@
 {
   "name": "an-bot",
-  "version": "1.6.0",
-  "main": "index.js",
-  "repository": "https://git.unistra.fr/amicale-core/uhc-bot",
+  "version": "1.0.0",
+  "description": "A discord bot that allows to do various things related to the french national assembly",
+  "repository": "git@github.com:M4xi1m3/an-bot.git",
   "author": "Maxime Friess <M4x1me@pm.me>",
   "license": "GPLv3",
   "private": false,
-  "type": "module",
+  "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.20",
+    "@types/lodash": "^4.14.182",
+    "@types/node": "^18.0.1",
+    "eslint": "^8.19.0",
+    "husky": ">=6",
+    "lint-staged": ">=10",
+    "nodemon": "^2.0.18",
+    "prettier": "^2.7.1",
+    "ts-node": "^10.8.2",
+    "typescript": "^4.7.4"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "start": "ts-node index.ts",
+    "build": "tsc",
+    "debug": "nodemon index.ts",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --config .prettierrc '**/*.ts' --write",
+    "prepare": "husky install"
+  },
   "dependencies": {
-    "@discordjs/opus": "^0.7.0",
-    "@discordjs/rest": "^0.1.0-canary.0",
+    "@discordjs/opus": "^0.8.0",
+    "@discordjs/rest": "^0.5.0",
     "@discordjs/voice": "^0.10.0",
-    "axios": "^0.21.4",
+    "@typescript-eslint/eslint-plugin": "^5.30.4",
+    "@typescript-eslint/parser": "^5.30.4",
+    "axios": "^0.27.2",
     "discord": "^0.8.2",
-    "discord-api-types": "^0.23.1",
-    "discord.js": "^13.1.0",
-    "dotenv": "^10.0.0",
+    "discord-api-types": "^0.36.0",
+    "discord.js": "^13.8.1",
+    "dotenv": "^16.0.1",
     "fast-xml-parser": "^4.0.8",
     "ffmpeg-static": "^5.0.2",
     "fluent-ffmpeg": "^2.1.2",
@@ -23,11 +46,8 @@
     "lodash": "^4.17.21",
     "sodium": "^3.0.2"
   },
-  "devDependencies": {
-    "nodemon": "^2.0.7"
-  },
-  "scripts": {
-    "start": "node index.js",
-    "debug": "nodemon index.js"
+  "lint-staged": {
+    "*.ts": "eslint --cache --fix",
+    "*.--write": "prettier --write"
   }
 }

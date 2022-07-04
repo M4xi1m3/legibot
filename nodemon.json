@@ -3,5 +3,8 @@
     "ignore": [
         "**.json",
         "**.sqlite"
-    ]
+    ],
+    "execMap": {
+        "ts": "ts-node"
+    }
 }
