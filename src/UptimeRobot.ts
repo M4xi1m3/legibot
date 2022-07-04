@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with AN-BOT.  If not, see <https://www.gnu.org/licenses/>.
+ * along with AN-BOT. If not, see <https://www.gnu.org/licenses/>.
  */
 
 import { createServer, Server, Socket } from 'net';
@@ -44,7 +44,7 @@ export class UptimeRobot {
                 logger.info(`Server started on ${HardConfig.getUptimeRobotIP()}:${HardConfig.getUptimeRobotPort()}.`);
             }));
         } catch (e) {
-            this.logger.error(`Failed to start on ${HardConfig.getUptimeRobotIP()}:${HardConfig.getUptimeRobotPort()}.`, e);
+            this.logger.error(`Failed to start on ${HardConfig.getUptimeRobotIP()}:${HardConfig.getUptimeRobotPort()}.`, e as Error);
         }
     }
 }

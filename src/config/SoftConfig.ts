@@ -19,7 +19,7 @@
 
 import fs from 'fs';
 import _ from 'lodash';
-import { Log, Logger } from '../utils/Logger.js';
+import { Log, Logger } from '../utils/Logger';
 
 const SOFTCONFIG_FILE = 'config/softconfig.json';
 

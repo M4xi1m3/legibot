@@ -31,7 +31,7 @@ class HardConfigManager {
     }
 
     getBotToken() {
-        return process.env.DISCORD_TOKEN;
+        return process.env.DISCORD_TOKEN ?? '';
     }
 
     getDiscordGods(): string[] {

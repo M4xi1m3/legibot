@@ -17,12 +17,13 @@
  * along with AN-BOT. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Bot } from './Bot';
 import { HardConfig } from './config/HardConfig';
 import { SoftConfig } from './config/SoftConfig';
 import { UptimeRobot } from './UptimeRobot';
 import { Logger } from './utils/Logger';
 
-export const main = () => {
+export const main = async () => {
     Logger.getLogger('Main').info('Starting AN-BOT');
     SoftConfig.load();
 
@@ -30,4 +31,7 @@ export const main = () => {
         const ur = new UptimeRobot();
         ur.start();
     }
+
+    await Bot.initClient();
+    Bot.start();
 };
