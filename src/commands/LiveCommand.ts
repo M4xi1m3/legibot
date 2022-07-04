@@ -67,7 +67,7 @@ export class LiveCommand extends Command {
             live = await ANLiveAPI.live();
             edito = await ANLiveAPI.edito();
         } catch (e: any) {
-            return { content: "Une erreur est survenue !" };
+            return { content: "Une erreur est survenue !", ephemeral: true };
         }
 
         if (this.getSelectable(live, edito).length === 0) {
@@ -121,11 +121,22 @@ export class LiveCommand extends Command {
             return;
 
         if (member.voice.channelId === null) {
-            interaction.reply({ content: "Vous devez être dans un canal vocal !" });
+            interaction.reply({ content: "Vous devez être dans un canal vocal !", ephemeral: true });
             return;
         }
 
         const flux = interaction.customId.split(",")[1];
+
+        try {
+            const live = await ANLiveAPI.live();
+            if (live.find((v) => v.flux === flux) === undefined) {
+                interaction.reply({ content: "Ce flux n'est plus en direct.", ephemeral: true });
+                return;
+            }
+        } catch (e: any) {
+            interaction.reply({ content: "Une erreur est survenue !", ephemeral: true });
+            return;
+        }
 
         Audio.playStream(`https://videos.assemblee-nationale.fr/live/live${flux}/playlist${flux}.m3u8`, {
             channelId: member.voice.channelId,
