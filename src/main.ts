@@ -17,5 +17,8 @@
  * along with AN-BOT. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { main } from './src/main';
-main();
+import { Logger } from './utils/Logger';
+
+export const main = () => {
+    Logger.getLogger('Main').info('Starting AN-BOT');
+};

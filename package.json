@@ -10,6 +10,8 @@
     "@types/lodash": "^4.14.182",
     "@types/node": "^18.0.1",
     "eslint": "^8.19.0",
+    "husky": ">=6",
+    "lint-staged": ">=10",
     "nodemon": "^2.0.18",
     "prettier": "^2.7.1",
     "ts-node": "^10.8.2",
@@ -22,7 +24,8 @@
     "build": "tsc",
     "debug": "nodemon index.ts",
     "lint": "eslint . --ext .ts",
-    "format": "prettier --config .prettierrc '**/*.ts' --write"
+    "format": "prettier --config .prettierrc '**/*.ts' --write",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@discordjs/opus": "^0.8.0",
@@ -41,5 +44,9 @@
     "html-entities": "^2.3.3",
     "lodash": "^4.17.21",
     "sodium": "^3.0.2"
+  },
+  "lint-staged": {
+    "*.ts": "eslint --cache --fix",
+    "*.--write": "prettier --write"
   }
 }
