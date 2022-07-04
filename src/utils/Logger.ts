@@ -83,7 +83,7 @@ class Log {
     }
 }
 
-class Loggers {
+class LoggerManager {
     private loggers: { [name: string]: Log };
 
     constructor() {
@@ -99,4 +99,5 @@ class Loggers {
     }
 }
 
-export const Logger = new Loggers();
+export const Logger = new LoggerManager();
+export type { Log, LoggerManager };
