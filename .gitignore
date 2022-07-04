@@ -5,3 +5,5 @@ cache.json
 *.log
 .env
 db.sqlite
+.husky
+.eslintcache
