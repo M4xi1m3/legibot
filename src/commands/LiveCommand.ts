@@ -88,11 +88,34 @@ export class LiveCommand extends Command {
                 embed.setTitle("Live Assemblée Nationale");
                 embed.setDescription("Veuillez sélectionner une séance en cours.");
             } else {
-                const diffusion = edito.diffusion.find(v => v.flux + "" === selected);
-                if (diffusion === undefined) {
+                const diffusions = edito.diffusion.filter(v => v.flux + "" === selected);
+                if (diffusions.length === 0) {
                     embed.setTitle("Live Assemblée Nationale");
                     embed.setDescription("Veuillez sélectionner une séance en cours.");
                 } else {
+                    let diffusion: DiffusionData | undefined = undefined;
+                    if (diffusions.length === 1) {
+                        diffusion = diffusions[0];
+                    } else {
+                        diffusions.sort((a, b) => a.heure - b.heure);
+
+                        const currentDate = new Date();
+                        currentDate.setMinutes(currentDate.getMinutes());
+                        let hour = currentDate.getHours() * 100 + currentDate.getMinutes();
+                        if (hour < 600)
+                            hour += 2400;
+
+                        for (let i = 0; i < diffusions.length - 1; i++) {
+                            if (hour < diffusions[i + 1].heure) {
+                                diffusion = diffusions[i];
+                                break;
+                            }
+                        }
+                        if (diffusion === undefined) {
+                            diffusion = diffusions[diffusions.length - 1];
+                        }
+                    }
+
                     embed.setTitle(diffusion.libelle === "" ? diffusion.libelle_court : diffusion.libelle);
                     embed.setDescription(decode(diffusion.sujet).replace("<br>", "\n").replace("<br/>", "\n"));
                     embed.setThumbnail(`https://videos.assemblee-nationale.fr/live/images/${diffusion.id_organe}.jpg`);
