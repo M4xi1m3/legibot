@@ -1,0 +1,21 @@
+{
+  "name": "an-bot",
+  "version": "1.0.0",
+  "description": "A discord bot that allows to do various things related to the french national assembly",
+  "repository": "git@github.com:M4xi1m3/an-bot.git",
+  "author": "Maxime Friess <M4x1me@pm.me>",
+  "license": "GPLv3",
+  "private": false,
+  "devDependencies": {
+    "nodemon": "^2.0.18",
+    "ts-node": "^10.8.2",
+    "typescript": "^4.7.4"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "start": "ts-node index.ts",
+    "build": "tsc",
+    "debug": "nodemon index.ts"
+  }
+}
