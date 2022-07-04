@@ -20,14 +20,11 @@
 import { CommandInteraction, InteractionReplyOptions, MessageComponentInteraction } from "discord.js";
 
 class MessagesManager {
-    constructor() {
-    }
-
     async sendSplittedReply(original: CommandInteraction | MessageComponentInteraction, msg: string, options: InteractionReplyOptions = {}): Promise<void> {
-        let msgs = this.splitForMessage(msg);
+        const msgs = this.splitForMessage(msg);
 
         let first = true;
-        for (let m of msgs) {
+        for (const m of msgs) {
 
             if (first) {
                 first = false;
@@ -38,10 +35,10 @@ class MessagesManager {
         }
     }
 
-    splitForMessage(msg: string, limit: number = 2000): string {
-        let lines = msg.split("\n");
+    splitForMessage(msg: string, limit = 2000): string {
+        const lines = msg.split("\n");
 
-        let messages = [];
+        const messages = [];
         let current = "";
 
         lines.forEach((line) => {

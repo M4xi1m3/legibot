@@ -56,7 +56,7 @@ class Log {
         const date = new Date().toISOString();
         const pref = "[" + date + "][" + this.name + "][" + prefix + "] ";
 
-        for (let line of string.toString().split('\n')) {
+        for (const line of string.toString().split('\n')) {
             logfnc(pref + line);
         }
     }

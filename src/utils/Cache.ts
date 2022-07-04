@@ -25,7 +25,7 @@ interface CacheEntry {
     ttl: number;
     time: number;
     value: any
-};
+}
 
 type CacheContent = { [key: string]: CacheEntry };
 
@@ -108,7 +108,7 @@ class CacheManger {
 
     getInfos(): CacheInfos {
         const cache = this.loadCache();
-        let out = [];
+        const out = [];
 
         for (const [key, value] of Object.entries(cache)) {
             out.push({

@@ -19,8 +19,6 @@
 
 import dotenv from 'dotenv';
 
-const HARDCONFIG_FILE = 'config/hardconfig.json';
-
 /**
  * Class that parses the .env file.
  * 
