@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with AN-BOT. If not, see <https://www.gnu.org/licenses/>.
+ * along with AN-BOT.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import { Bot } from './Bot';

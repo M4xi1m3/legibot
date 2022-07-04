@@ -14,12 +14,12 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with AN-BOT. If not, see <https://www.gnu.org/licenses/>.
+ * along with AN-BOT.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import { Message } from "discord.js";
 
- class DMCommand {
+export class DMCommand {
     constructor() {
         if (this.constructor === DMCommand) {
             throw new TypeError('Abstract class "DMCommand" cannot be instantiated directly');
@@ -63,5 +63,3 @@ import { Message } from "discord.js";
         return new RegExp("^" + this.getName() + (ar !== "" ? " " + ar : "") + "$");
     }
 }
-
-export default DMCommand;

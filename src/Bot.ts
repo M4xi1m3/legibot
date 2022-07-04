@@ -14,15 +14,18 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with AN-BOT. If not, see <https://www.gnu.org/licenses/>.
+ * along with AN-BOT.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { ButtonInteraction, Client, CommandInteraction, DMChannel, Interaction, Message, SelectMenuInteraction, VoiceState } from 'discord.js';
-import Command from './base/Command';
-import DMCommand from './base/DMCommand';
+import { Command } from './base/Command';
+import { DMCommand } from './base/DMCommand';
+import { commands } from './commands';
 import { HardConfig } from './config/HardConfig';
+import { SoftConfig } from './config/SoftConfig';
+import { dmcommands } from './dmcommands';
 import { Audio } from './utils/Audio';
 import { Log, Logger } from './utils/Logger';
 
@@ -52,47 +55,28 @@ class BotManager {
 
     private async loadDMCommands() {
         this.logger.info("Loading dm commands...");
-        /*
-        try {
-            const files = fs.readdirSync(path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'dmcommands'));
 
-            for (let filename of files) {
-                const module = await import(path.join(path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'dmcommands'), filename));
-                const command = new module.default;
-                this.logger.info("Loading dm command " + command.getName());
-                this.dmcommands[command.getName()] = command;
-                for (let o of command.getConfigs()) {
-                    SoftConfig.registerConfig(o);
-                }
+        for (const cdmcommand of dmcommands) {
+            const dmcommand = new cdmcommand();
+            this.logger.info("Loading dm command " + dmcommand.getName());
+            this.dmcommands[dmcommand.getName()] = dmcommand;
+            for (const o of dmcommand.getConfigs()) {
+                SoftConfig.registerConfig(o);
             }
-        } catch (e) {
-            this.__logger.fatal("Failed to register dmcommands!", e, 3);
-            return;
         }
-        */
-
     }
 
     async loadCommands() {
         this.logger.info("Loading slash commands...");
-        /*
-        try {
-            const files = fs.readdirSync(path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'commands'));
 
-            for (let filename of files) {
-                const module = await import(path.join(path.join(path.dirname(url.fileURLToPath(import.meta.url)), 'commands'), filename));
-                const command = new module.default;
-                this.__logger.info("Loading command " + command.getName());
-                this.__commands[command.getName()] = command;
-                for (let o of command.getConfigs()) {
-                    SoftConfig.registerConfig(o);
-                }
+        for (const ccommand of commands) {
+            const command = new ccommand();
+            this.logger.info("Loading command " + command.getName());
+            this.commands[command.getName()] = command;
+            for (const o of command.getConfigs()) {
+                SoftConfig.registerConfig(o);
             }
-        } catch (e) {
-            this.__logger.fatal("Failed to register commands!", e, 3);
-            return;
         }
-        */
     }
 
     async registerCommands(guilds_id: string[]) {

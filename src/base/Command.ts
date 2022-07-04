@@ -14,12 +14,12 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with AN-BOT. If not, see <https://www.gnu.org/licenses/>.
+ * along with AN-BOT.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import { CommandInteraction } from "discord.js";
 
- class Command {
+export class Command {
     constructor() {
         if (this.constructor === Command) {
             throw new TypeError('Abstract class "Command" cannot be instantiated directly');
@@ -54,5 +54,3 @@ import { CommandInteraction } from "discord.js";
         throw new TypeError('Abstract method "execute" of class "Command" cannot be used directly');
     }
 }
-
-export default Command;

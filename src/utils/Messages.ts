@@ -14,27 +14,35 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with AN-BOT. If not, see <https://www.gnu.org/licenses/>.
+ * along with AN-BOT.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { CommandInteraction, InteractionReplyOptions, MessageComponentInteraction } from 'discord.js';
+import { CommandInteraction, InteractionReplyOptions, Message, MessageComponentInteraction } from 'discord.js';
 
 class MessagesManager {
-    async sendSplittedReply(original: CommandInteraction | MessageComponentInteraction, msg: string, options: InteractionReplyOptions = {}): Promise<void> {
+    async sendSplittedReply(original: CommandInteraction | MessageComponentInteraction | Message, msg: string, options: InteractionReplyOptions = {}): Promise<void> {
         const msgs = this.splitForMessage(msg);
 
         let first = true;
         for (const m of msgs) {
             if (first) {
                 first = false;
-                await original.reply({ content: m, ...options });
+                if (original instanceof Message) {
+                    await original.reply(m);
+                } else {
+                    await original.reply({ content: m, ...options });
+                }
             } else {
-                await original.followUp({ content: m, ...options });
+                if (original instanceof Message) {
+                    await original.channel.send(m);
+                } else {
+                    await original.followUp({ content: m, ...options });
+                }
             }
         }
     }
 
-    splitForMessage(msg: string, limit = 2000): string {
+    splitForMessage(msg: string, limit = 2000): string[] {
         const lines = msg.split('\n');
 
         const messages = [];
