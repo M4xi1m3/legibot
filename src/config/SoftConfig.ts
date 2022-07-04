@@ -1,18 +1,18 @@
 /**
  * Copyright © 2022 Maxime Friess <M4x1me@pm.me>
- * 
+ *
  * This file is part of AN-BOT.
- * 
+ *
  * AN-BOT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * AN-BOT is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with AN-BOT. If not, see <https://www.gnu.org/licenses/>.
  */
@@ -25,7 +25,7 @@ const SOFTCONFIG_FILE = 'config/softconfig.json';
 
 /**
  * Class that parses the softconfig.json file.
- * 
+ *
  * This config is meant to not be editable nor reloadable,
  * we thus only load it when constructing.
  */
@@ -35,7 +35,7 @@ class SoftConfigManager {
     private config: { [key: string]: any };
 
     constructor() {
-        this.logger = Logger.getLogger("SoftConfig");
+        this.logger = Logger.getLogger('SoftConfig');
         this.config_options = [];
         this.config = {};
     }
@@ -59,7 +59,7 @@ class SoftConfigManager {
             try {
                 fs.mkdirSync('config');
             } catch (e: any) {
-                this.logger.fatal("Failed to create config directory!", e as Error, 1);
+                this.logger.fatal('Failed to create config directory!', e as Error, 1);
                 return;
             }
         }
@@ -67,7 +67,7 @@ class SoftConfigManager {
         try {
             fs.writeFileSync(SOFTCONFIG_FILE, JSON.stringify(this.config));
         } catch (e: any) {
-            this.logger.fatal("Failed to save to config file!", e as Error, 1);
+            this.logger.fatal('Failed to save to config file!', e as Error, 1);
             return;
         }
     }
@@ -79,7 +79,7 @@ class SoftConfigManager {
             try {
                 fs.mkdirSync('config');
             } catch (e: any) {
-                this.logger.fatal("Failed to create config directory!", e as Error, 1);
+                this.logger.fatal('Failed to create config directory!', e as Error, 1);
                 return;
             }
         }
@@ -90,15 +90,15 @@ class SoftConfigManager {
                 this.config = {};
                 return;
             } catch (e: any) {
-                this.logger.fatal("Failed to create config file!", e as Error, 1);
+                this.logger.fatal('Failed to create config file!', e as Error, 1);
                 return;
             }
         }
 
         try {
-            this.config = JSON.parse(fs.readFileSync(SOFTCONFIG_FILE, { encoding: "utf-8" }));
+            this.config = JSON.parse(fs.readFileSync(SOFTCONFIG_FILE, { encoding: 'utf-8' }));
         } catch (e: any) {
-            this.logger.fatal("Failed to read config file!", e as Error, 2);
+            this.logger.fatal('Failed to read config file!', e as Error, 2);
             return;
         }
     }

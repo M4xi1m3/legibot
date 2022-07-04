@@ -1,18 +1,18 @@
 /**
  * Copyright © 2022 Maxime Friess <M4x1me@pm.me>
- * 
+ *
  * This file is part of AN-BOT.
- * 
+ *
  * AN-BOT is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * AN-BOT is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with AN-BOT. If not, see <https://www.gnu.org/licenses/>.
  */
@@ -24,23 +24,23 @@ interface CacheEntry {
     modified: number;
     ttl: number;
     time: number;
-    value: any
+    value: any;
 }
 
 type CacheContent = { [key: string]: CacheEntry };
 
 type CacheInfos = {
-    key: string,
-    modified: number,
-    expires: number,
-    size: number
+    key: string;
+    modified: number;
+    expires: number;
+    size: number;
 }[];
 
 class CacheManger {
     private logger: Log;
 
     constructor() {
-        this.logger = Logger.getLogger("Cache");
+        this.logger = Logger.getLogger('Cache');
     }
 
     private loadCache(): CacheContent {
@@ -48,8 +48,7 @@ class CacheManger {
             try {
                 fs.writeFileSync(`./cache.json`, JSON.stringify({}));
                 this.logger.info(`Creating cache file...`);
-            }
-            catch (error: any) {
+            } catch (error: any) {
                 this.logger.error(`Unable to create cache file.`, error as Error);
             }
         }
@@ -67,12 +66,12 @@ class CacheManger {
         let modified = false;
 
         // If the value is not found, we create it.
-        if (!((key in cache) && ('time' in cache[key]) && ('ttl' in cache[key]) && ('modified' in cache[key]) && ('value' in cache[key]))) {
+        if (!(key in cache && 'time' in cache[key] && 'ttl' in cache[key] && 'modified' in cache[key] && 'value' in cache[key])) {
             cache[key] = {
                 modified: Date.now(),
                 time: Date.now() + ttl * 1000,
                 ttl: ttl,
-                value: await func()
+                value: await func(),
             };
             modified = true;
         }
@@ -83,7 +82,7 @@ class CacheManger {
                 modified: Date.now(),
                 time: Date.now() + ttl * 1000,
                 ttl: ttl,
-                value: await func()
+                value: await func(),
             };
             modified = true;
         }
@@ -99,7 +98,7 @@ class CacheManger {
         const cache = this.loadCache();
 
         // If the value is not found, we return null.
-        if (!((key in cache) && ('modified' in cache[key]) && ('time' in cache[key]) && ('value' in cache[key]))) {
+        if (!(key in cache && 'modified' in cache[key] && 'time' in cache[key] && 'value' in cache[key])) {
             return null;
         }
 
@@ -115,7 +114,7 @@ class CacheManger {
                 key: key,
                 modified: value?.modified,
                 expires: value?.time,
-                size: JSON.stringify(value?.value).length
+                size: JSON.stringify(value?.value).length,
             });
         }
 
