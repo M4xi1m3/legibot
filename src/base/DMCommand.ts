@@ -20,7 +20,7 @@
 import { Message } from "discord.js";
 
 export class DMCommand {
-    constructor() {
+    protected constructor() {
         if (this.constructor === DMCommand) {
             throw new TypeError('Abstract class "DMCommand" cannot be instantiated directly');
         }

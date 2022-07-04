@@ -20,7 +20,7 @@
 import { CommandInteraction } from "discord.js";
 
 export class Command {
-    constructor() {
+    protected constructor() {
         if (this.constructor === Command) {
             throw new TypeError('Abstract class "Command" cannot be instantiated directly');
         }

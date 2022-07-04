@@ -17,12 +17,11 @@
  * along with AN-BOT.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
+import { Api } from '../base/Api';
 import { Cache } from '../utils/Cache';
-import { Log, Logger } from '../utils/Logger';
 
-export type LiveData = {flux: string, media: string}[];
+export type LiveData = { flux: string, media: string }[];
 
 export type DiffusionData = {
     id_organe: number,
@@ -38,14 +37,13 @@ export type DiffusionData = {
     video_url?: string
 };
 
-export type EditoData = {titre: string, introduction: string, diffusion: DiffusionData[]};
+export type EditoData = { titre: string, introduction: string, diffusion: DiffusionData[] };
 
-class ANLiveAPIManager {
-    private logger: Log;
+class ANLiveAPIManager extends Api {
     private parser: XMLParser;
 
     constructor() {
-        this.logger = Logger.getLogger("AnApi");
+        super();
         this.parser = new XMLParser({
             processEntities: false, htmlEntities: false, ignorePiTags: true, isArray: (name, jpath) => {
                 return [
@@ -53,28 +51,6 @@ class ANLiveAPIManager {
                 ].indexOf(jpath) !== -1;
             }
         });
-    }
-
-    private async request(method: "GET" | "POST" | "PUT" | "DELETE", path: string, data?: any) {
-        this.logger.info(method + " " + path);
-        try {
-            const res = await axios.request({ method: method.toLocaleLowerCase(), url: path, data, headers: { 'Accepts': 'application/json' }});
-
-            return {
-                good: true,
-                error: '',
-                status: res.status,
-                data: res.data
-            };
-        } catch (error: any) {
-            this.logger.error(`Error with API Request:\n    ${method} ${path}\n`, error as Error);
-            return {
-                good: false,
-                error: error?.message,
-                status: -1,
-                data: {}
-            }
-        }
     }
 
     async load_live() {
