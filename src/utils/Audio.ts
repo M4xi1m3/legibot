@@ -20,16 +20,19 @@
 import { AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, CreateVoiceConnectionOptions, entersState, joinVoiceChannel, JoinVoiceChannelOptions, NoSubscriberBehavior, VoiceConnection, VoiceConnectionStatus } from "@discordjs/voice";
 import Ffmpeg, { FfmpegCommand } from "fluent-ffmpeg";
 import { PassThrough } from "stream";
+import { Log, Logger } from "./Logger";
 
 class AudioManager {
     private connections: {[guild_id: string]: VoiceConnection};
     private players: {[url: string]: AudioPlayer};
     private ffmpeg: {[url: string]: FfmpegCommand};
+    private logger: Log;
 
     constructor() {
         this.connections = {};
         this.players = {};
         this.ffmpeg = {};
+        this.logger = Logger.getLogger("Audio");
     }
 
     public clean(): void {
@@ -56,6 +59,7 @@ class AudioManager {
     }
 
     public playStream(url: string, params: JoinVoiceChannelOptions & CreateVoiceConnectionOptions): void {
+        this.logger.info(`Joining ${params.guildId}.`);
         const connection = joinVoiceChannel(params);
 
         this.connections[params.guildId] = connection;
@@ -64,7 +68,9 @@ class AudioManager {
         if (url in this.players) {
             player = this.players[url];
         } else {
-            const stream = Ffmpeg(url).noVideo().audioCodec('opus').format('ogg');
+            const stream = Ffmpeg(url).noVideo().audioCodec('opus').format('ogg').on('error', (error: any) => {
+                this.logger.error(`ffmpeg error while playing ${url}.`, error as Error);
+            });
             this.ffmpeg[url] = stream;
             const resource = createAudioResource(stream.pipe() as PassThrough);
 
@@ -74,7 +80,8 @@ class AudioManager {
                 }
             });
 
-            player.on('error', () => {
+            player.on('error', (error: any) => {
+                this.logger.error(`Player error while playing ${url}.`, error as Error);
                 this.leave(params.guildId);
             });
 
@@ -82,6 +89,7 @@ class AudioManager {
                 this.leave(params.guildId);
             });
 
+            this.logger.info(`Playing ${url}.`);
             player.play(resource);
         }
 
@@ -94,12 +102,13 @@ class AudioManager {
                     entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
                     entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
                 ]);
-            } catch (error) {
+            } catch (error: any) {
+                this.logger.error(`Connection error while playing in ${params.guildId}.`, error as Error);
                 this.leave(params.guildId);
             }
         });
 
-        this.clean();
+        // this.clean();
     }
 }
 
