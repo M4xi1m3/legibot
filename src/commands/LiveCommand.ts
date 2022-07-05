@@ -17,18 +17,20 @@
  * along with AN-BOT.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ButtonInteraction, CommandInteraction, GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, SelectMenuInteraction } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessagePayload, MessageSelectMenu, MessageSelectOptionData, SelectMenuInteraction, WebhookEditMessageOptions } from 'discord.js';
 import { decode } from 'html-entities';
 import { ANLiveAPI, DiffusionData, EditoData, LiveData } from '../api/ANLiveAPI';
 import { Command } from '../base/Command';
 import { Bot } from '../Bot';
 import { Audio } from '../utils/Audio';
+import { Emoji } from '../utils/Emoji';
 
 export class LiveCommand extends Command {
     constructor() {
         super();
         Bot.registerSelect("live_seance", this.selectSeance.bind(this));
         Bot.registerButton("live_listen", this.listenSeance.bind(this));
+        Bot.registerButton("live_reload", this.reloadSeance.bind(this));
     }
 
     getName() {
@@ -43,9 +45,9 @@ export class LiveCommand extends Command {
         return ["command.ping.message"];
     }
 
-    private getSelectable(live: LiveData, edito: EditoData) {
+    private getSelectable(live: LiveData, edito: EditoData): MessageSelectOptionData[] | undefined {
         if (edito.diffusion === undefined)
-            return [];
+            return undefined;
 
         const out = [];
 
@@ -58,33 +60,49 @@ export class LiveCommand extends Command {
             }
         }
 
+        if (out.length === 0)
+            return undefined;
+
         return out;
     }
 
-    private async getMessageData(selected: string | null = null) {
+    private async getMessageData(selected: string | null = null): Promise<MessagePayload | WebhookEditMessageOptions> {
         let live: LiveData, edito: EditoData;
         try {
             live = await ANLiveAPI.live();
             edito = await ANLiveAPI.edito();
         } catch (e: any) {
-            return { content: "Une erreur est survenue !", ephemeral: true };
+            return { content: "Une erreur est survenue !" };
         }
 
-        if (this.getSelectable(live, edito).length === 0) {
+        const selectable = this.getSelectable(live, edito);
+
+        if (selectable === undefined || live.length === 0) {
             const embed = new MessageEmbed();
             embed.setTitle("Live Assemblée Nationale");
             embed.setDescription("Pas de direct en cours.");
-            return { embeds: [embed] };
+            return {
+                embeds: [embed], components: [new MessageActionRow().addComponents(
+                    new MessageSelectMenu().setCustomId("live_seance")
+                        .setPlaceholder("Séance")
+                        .addOptions(selectable ?? [{ label: "Ouai", value: "ouai" }])
+                        .setDisabled(true)
+                ), new MessageActionRow().addComponents(
+                    new MessageButton().setCustomId("live_listen,null")
+                        .setLabel("Écouter")
+                        .setStyle("PRIMARY")
+                        .setDisabled(true)
+                ).addComponents(
+                    new MessageButton().setCustomId("live_reload,null")
+                        .setLabel("Rafraîchir")
+                        .setStyle("SECONDARY")
+                        .setEmoji(Emoji.refresh)
+                )]
+            };
         } else {
             const embed = new MessageEmbed();
 
-            if (live.length === 0) {
-                embed.setTitle("Live Assemblée Nationale");
-                embed.setDescription("Aucune séance en direct actuellement.");
-                return { embeds: [embed] };
-            }
-
-            if (selected === null) {
+            if (selected === null || selected === "null") {
                 embed.setTitle("Live Assemblée Nationale");
                 embed.setDescription("Veuillez sélectionner une séance en cours.");
             } else {
@@ -122,18 +140,23 @@ export class LiveCommand extends Command {
                 }
             }
 
-            const row = [new MessageActionRow().addComponents(
-                new MessageSelectMenu().setCustomId("live_seance")
-                    .setPlaceholder("Séance")
-                    .addOptions(this.getSelectable(live, edito))
-            ), new MessageActionRow().addComponents(
-                new MessageButton().setCustomId("live_listen," + selected)
-                    .setLabel("Écouter")
-                    .setStyle("PRIMARY")
-                    .setDisabled(selected === null)
-            )];
-
-            return { embeds: [embed], components: row };
+            return {
+                embeds: [embed], components: [new MessageActionRow().addComponents(
+                    new MessageSelectMenu().setCustomId("live_seance")
+                        .setPlaceholder("Séance")
+                        .addOptions(selectable)
+                ), new MessageActionRow().addComponents(
+                    new MessageButton().setCustomId("live_listen," + selected)
+                        .setLabel("Écouter")
+                        .setStyle("PRIMARY")
+                        .setDisabled(selected === null)
+                ).addComponents(
+                    new MessageButton().setCustomId("live_reload," + selected)
+                        .setLabel("Rafraîchir")
+                        .setStyle("SECONDARY")
+                        .setEmoji(Emoji.refresh)
+                )]
+            };
         }
 
     }
@@ -174,6 +197,12 @@ export class LiveCommand extends Command {
         await interaction.deferUpdate();
         const select = interaction.values[0];
         interaction.editReply(await this.getMessageData(select));
+    }
+
+    async reloadSeance(interaction: ButtonInteraction) {
+        await interaction.deferUpdate();
+        const flux = interaction.customId.split(",")[1];
+        interaction.editReply(await this.getMessageData(flux));
     }
 
     async execute(interaction: CommandInteraction) {
