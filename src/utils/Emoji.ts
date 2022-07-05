@@ -21,11 +21,13 @@ class EmojiManager {
     public yes: string;
     public no: string;
     public null: string;
+    public refresh: string;
 
     constructor() {
         this.yes = '✅';
         this.no = '❎';
         this.null = '🅾';
+        this.refresh = '🔄';
     }
 
     digitToEmoji(digit: number): string {
