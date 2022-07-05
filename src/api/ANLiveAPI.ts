@@ -58,7 +58,7 @@ class ANLiveAPIManager extends Api {
     }
 
     async live(): Promise<LiveData> {
-        return await Cache.cache('an.live', 5 * 60, async () => {
+        return await Cache.cache('an.live', 15, async () => {
             const data = [];
             const res = await this.load_live();
 
@@ -82,7 +82,7 @@ class ANLiveAPIManager extends Api {
     }
 
     async edito(): Promise<EditoData> {
-        return await Cache.cache('an.edito', 5 * 60, async () => {
+        return await Cache.cache('an.edito', 10 * 60, async () => {
             const res = await this.load_edito();
 
             if (!res.good) {
