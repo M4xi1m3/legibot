@@ -1,8 +1,8 @@
 {
-  "name": "an-bot",
+  "name": "legibot",
   "version": "1.0.0",
   "description": "A discord bot that allows to do various things related to the french national assembly",
-  "repository": "https://github.com/M4xi1m3/an-bot",
+  "repository": "https://github.com/M4xi1m3/legibot",
   "author": "Maxime Friess <M4x1me@pm.me>",
   "license": " GPL-3.0-or-later",
   "private": false,
@@ -20,8 +20,8 @@
     "typescript": "^4.7.4",
     "yarn-or-npm": "^3.0.1"
   },
-  "main": "dist/an-bot.js",
-  "types": "dist/an-bot.d.ts",
+  "main": "dist/legibot.js",
+  "types": "dist/legibot.d.ts",
   "scripts": {
     "craft": "ts-node src/craft.ts",
     "prestart": "yon craft gen",
