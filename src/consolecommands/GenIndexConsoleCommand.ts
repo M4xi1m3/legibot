@@ -22,7 +22,7 @@ import { join } from "path";
 import { ConsoleCommand } from "../base/ConsoleCommand";
 import { Log, Logger } from "../utils/Logger";
 
-export class RefreshConsoleCommand extends ConsoleCommand {
+export class GenIndexConsoleCommand extends ConsoleCommand {
     private logger: Log;
     private folders: { file: string, type: string, name: string }[];
 
@@ -37,7 +37,7 @@ export class RefreshConsoleCommand extends ConsoleCommand {
     }
 
     getName(): string {
-        return "refresh";
+        return "gen:index";
     }
 
     getDescription(): string {
@@ -54,7 +54,7 @@ export class RefreshConsoleCommand extends ConsoleCommand {
             }
 
             const content = `// AUTO-GENERATED
-// Run "yarn craft refresh" to update
+// Run "yarn craft gen:index" to update
 
 import { ${path.type} } from "../base/${path.type}";
 ${classes.map((n: string) => `import { ${n} } from "./${n}";`).join("\n")}

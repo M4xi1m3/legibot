@@ -28,21 +28,20 @@ class Craft {
         this.logger = Logger.getLogger("Craft");
     }
 
-    private findCommand(name: string): ConsoleCommand {
-        let command: ConsoleCommand | undefined = undefined;
+    private findCommands(name: string): ConsoleCommand[] {
+        const commands: ConsoleCommand[] = [];
 
         for (const ctor of consolecommands) {
             const c = new ctor();
-            if (c.getName() === name) {
-                command = c;
-                break;
+            if (c.getName() === name || c.getName().startsWith(name + ":")) {
+                commands.push(c);
             }
         }
 
-        if (command === undefined)
+        if (commands === [])
             this.logger.fatal(`Command "${name}" doesn't exist. Please run "yarn craft help" to get a list of available commands.`);
 
-        return command as ConsoleCommand;
+        return commands as ConsoleCommand[];
     }
 
     public async run(args: string[]) {
@@ -52,9 +51,10 @@ class Craft {
             this.logger.fatal("Please provide a command !");
         }
 
-        const command = this.findCommand(name as string);
+        const commands = this.findCommands(name as string);
 
-        await command.execute(args);
+        for (const command of commands)
+            await command.execute(args);
     }
 }
 

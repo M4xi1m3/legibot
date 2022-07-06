@@ -17,13 +17,16 @@
     "nodemon": "^2.0.18",
     "prettier": "^2.7.1",
     "ts-node": "^10.8.2",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "yarn-or-npm": "^3.0.1"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/an-bot.js",
+  "types": "dist/an-bot.d.ts",
   "scripts": {
     "craft": "ts-node src/craft.ts",
+    "prestart": "yon craft gen",
     "start": "ts-node index.ts",
+    "prebuild": "yon craft gen",
     "build": "tsc",
     "debug": "nodemon index.ts",
     "lint": "eslint . --ext .ts",

@@ -1,5 +1,5 @@
 // AUTO-GENERATED
-// Run "yarn craft refresh" to update
+// Run "yarn craft gen:index" to update
 
 import { DMCommand } from "../base/DMCommand";
 import { ActivityClearDMCommand } from "./ActivityClearDMCommand";

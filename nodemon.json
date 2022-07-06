@@ -2,9 +2,12 @@
     "verbose": true,
     "ignore": [
         "**.json",
-        "**.sqlite"
+        "**.sqlite",
+        "src/**/index.ts",
+        "src/version.ts"
     ],
     "execMap": {
         "ts": "ts-node"
-    }
+    },
+    "exec": "yarn start"
 }

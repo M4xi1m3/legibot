@@ -7,3 +7,5 @@ cache.json
 db.sqlite
 .husky
 .eslintcache
+dist/
+src/version.ts

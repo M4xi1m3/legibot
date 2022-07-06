@@ -22,9 +22,13 @@ import { HardConfig } from './config/HardConfig';
 import { SoftConfig } from './config/SoftConfig';
 import { UptimeRobot } from './UptimeRobot';
 import { Logger } from './utils/Logger';
+import { ANBOT_DEV, ANBOT_HASH, ANBOT_VERSION } from './version';
 
 export const main = async () => {
-    Logger.getLogger('Main').info('Starting AN-BOT');
+    Logger.getLogger('Main').info(`Starting AN-BOT ${ANBOT_VERSION}${ANBOT_DEV ? '-dev' : ''} (${ANBOT_HASH})`);
+    if (ANBOT_DEV)
+        Logger.getLogger('Main').warn("This is a developpement build of AN-BOT!");
+
     SoftConfig.load();
 
     if (HardConfig.isUptimeRobotEnabled()) {

@@ -1,5 +1,5 @@
 // AUTO-GENERATED
-// Run "yarn craft refresh" to update
+// Run "yarn craft gen:index" to update
 
 import { Command } from "../base/Command";
 import { LiveCommand } from "./LiveCommand";
