@@ -54,7 +54,7 @@ class ANLiveAPIManager extends Api {
     }
 
     async load_live() {
-        return await this.request("GET", "https://videos.assemblee-nationale.fr/live/live.txt");
+        return await this.request("GET", `https://videos.assemblee-nationale.fr/live/live.txt?rnd=${Date.now()}`);
     }
 
     async live(): Promise<LiveData> {
@@ -67,6 +67,8 @@ class ANLiveAPIManager extends Api {
             } else {
                 for (const line of res.data.split("\n")) {
                     const [flux, media] = line.split(" ");
+                    if (flux === '')
+                        continue;
                     data.push({
                         flux,
                         media
@@ -78,7 +80,7 @@ class ANLiveAPIManager extends Api {
     }
 
     async load_edito() {
-        return await this.request("GET", `https://videos.assemblee-nationale.fr/php/getedito.php`);
+        return await this.request("GET", `https://videos.assemblee-nationale.fr/php/getedito.php?${Date.now()}`);
     }
 
     async edito(): Promise<EditoData> {

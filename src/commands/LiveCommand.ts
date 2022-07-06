@@ -53,6 +53,8 @@ export class LiveCommand extends Command {
 
         for (const l of live) {
             const e: DiffusionData | undefined = edito.diffusion.find(v => v.flux + "" === l.flux);
+            if (e?.flux + "" === "")
+                continue;
             if (e !== undefined) {
                 out.push({
                     label: e.libelle_court, value: l.flux
@@ -85,7 +87,7 @@ export class LiveCommand extends Command {
                 embeds: [embed], components: [new MessageActionRow().addComponents(
                     new MessageSelectMenu().setCustomId("live_seance")
                         .setPlaceholder("Séance")
-                        .addOptions(selectable ?? [{ label: "Ouai", value: "ouai" }])
+                        .addOptions(selectable ?? [{ label: "ERROR", value: "ERROR" }])
                         .setDisabled(true)
                 ), new MessageActionRow().addComponents(
                     new MessageButton().setCustomId("live_listen,null")
@@ -144,7 +146,7 @@ export class LiveCommand extends Command {
                 embeds: [embed], components: [new MessageActionRow().addComponents(
                     new MessageSelectMenu().setCustomId("live_seance")
                         .setPlaceholder("Séance")
-                        .addOptions(selectable)
+                        .addOptions(selectable ?? [{ label: "ERROR", value: "ERROR" }])
                 ), new MessageActionRow().addComponents(
                     new MessageButton().setCustomId("live_listen," + selected)
                         .setLabel("Écouter")

@@ -23,9 +23,9 @@ import { PassThrough } from "stream";
 import { Log, Logger } from "./Logger";
 
 class AudioManager {
-    private connections: {[guild_id: string]: VoiceConnection};
-    private players: {[url: string]: AudioPlayer};
-    private ffmpeg: {[url: string]: FfmpegCommand};
+    private connections: { [guild_id: string]: VoiceConnection };
+    private players: { [url: string]: AudioPlayer };
+    private ffmpeg: { [url: string]: FfmpegCommand };
     private logger: Log;
 
     constructor() {
@@ -35,12 +35,11 @@ class AudioManager {
         this.logger = Logger.getLogger("Audio");
     }
 
-    public clean(): void {
+    public clean(ignore?: string): void {
         for (const url in this.players) {
             const player = this.players[url];
-            if (player.playable.length < 1) {
+            if (player.playable.length < 1 && url !== ignore) {
                 player.stop();
-                this.ffmpeg[url].on("error", () => undefined);
                 this.ffmpeg[url].kill('SIGKILL');
                 delete this.ffmpeg[url];
                 delete this.players[url];
@@ -52,10 +51,24 @@ class AudioManager {
         if (this.connections[guild_id] === undefined)
             return;
 
+        this.logger.info(`Leaving ${guild_id}.`);
         this.connections[guild_id].destroy();
         delete this.connections[guild_id];
 
         this.clean();
+    }
+
+    private startFfmpeg(url: string) {
+        return Ffmpeg(url).noVideo().audioCodec('opus').format('ogg').outputOptions([
+            "-drop_pkts_on_overflow", "1", "-attempt_recovery", "1", "-recovery_wait_time", "1", "-recover_any_error", "1"
+        ]).on('error', ((error: any, stdout: null | string, stderr: null | string) => {
+            this.logger.error(`ffmpeg error while playing ${url}.`, error as Error);
+            console.log(stdout);
+            console.error(stderr);
+        }).bind(this)).on('end', ((_: any, stderr: string | null) => {
+            this.logger.info(`ffmpeg ended.`);
+            console.error(stderr);
+        }).bind(this));
     }
 
     public playStream(url: string, params: JoinVoiceChannelOptions & CreateVoiceConnectionOptions): void {
@@ -64,13 +77,11 @@ class AudioManager {
 
         this.connections[params.guildId] = connection;
 
-        let player = null;
+        let player: AudioPlayer | null = null;
         if (url in this.players) {
             player = this.players[url];
         } else {
-            const stream = Ffmpeg(url).noVideo().audioCodec('opus').format('ogg').on('error', (error: any) => {
-                this.logger.error(`ffmpeg error while playing ${url}.`, error as Error);
-            });
+            const stream = this.startFfmpeg(url);
             this.ffmpeg[url] = stream;
             const resource = createAudioResource(stream.pipe() as PassThrough);
 
@@ -86,7 +97,12 @@ class AudioManager {
             });
 
             player.on(AudioPlayerStatus.Idle, () => {
-                this.leave(params.guildId);
+                this.logger.info("Idle");
+                this.ffmpeg[url].kill('SIGKILL');
+                const stream = this.startFfmpeg(url);
+                this.ffmpeg[url] = stream;
+                const resource = createAudioResource(stream.pipe() as PassThrough);
+                player?.play(resource);
             });
 
             this.logger.info(`Playing ${url}.`);
@@ -108,7 +124,7 @@ class AudioManager {
             }
         });
 
-        // this.clean();
+        this.clean(url);
     }
 }
 
