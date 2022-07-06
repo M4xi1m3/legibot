@@ -2,7 +2,7 @@
   "name": "an-bot",
   "version": "1.0.0",
   "description": "A discord bot that allows to do various things related to the french national assembly",
-  "repository": "git@github.com:M4xi1m3/an-bot.git",
+  "repository": "https://github.com/M4xi1m3/an-bot",
   "author": "Maxime Friess <M4x1me@pm.me>",
   "license": " GPL-3.0-or-later",
   "private": false,
