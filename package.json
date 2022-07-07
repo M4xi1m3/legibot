@@ -49,6 +49,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "html-entities": "^2.3.3",
     "lodash": "^4.17.21",
+    "node-ical": "^0.15.1",
     "sodium": "^3.0.2"
   },
   "lint-staged": {
