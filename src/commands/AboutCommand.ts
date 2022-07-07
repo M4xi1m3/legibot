@@ -17,7 +17,7 @@
  * along with LegiBot.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, MessageAttachment, MessageEmbed } from 'discord.js';
 import { Command } from '../base/Command';
 import { ANBOT_DEV, ANBOT_HASH, ANBOT_REPOSITORY, ANBOT_VERSION } from '../version';
 
@@ -44,9 +44,10 @@ export class AboutCommand extends Command {
                 new MessageEmbed()
                     .setTitle(`**LegiBot ${ANBOT_VERSION}${ANBOT_DEV ? '-dev' : ''} (${ANBOT_HASH})**\n`)
                     .setURL(ANBOT_REPOSITORY)
+                    .setThumbnail('attachment://logo.png')
                     .setDescription("Bot Discord pour interragir avec l'asseblée nationale.")
                     .addField("Licence", "LegiBot est distribué sous licence [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html).")
-            ], ephemeral: true
+            ], files: [new MessageAttachment(`doc/logo/logo-transparent${ANBOT_DEV ? '-dev' : ''}.png`, 'logo.png')], ephemeral: true
         });
     }
 }
