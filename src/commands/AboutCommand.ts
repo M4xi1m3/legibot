@@ -19,7 +19,7 @@
 
 import { CommandInteraction, MessageAttachment, MessageEmbed } from 'discord.js';
 import { Command } from '../base/Command';
-import { ANBOT_DEV, ANBOT_HASH, ANBOT_REPOSITORY, ANBOT_VERSION } from '../version';
+import { LEGIBOT_DEV, LEGIBOT_HASH, LEGIBOT_REPOSITORY, LEGIBOT_VERSION } from '../version';
 
 export class AboutCommand extends Command {
     constructor() {
@@ -42,12 +42,12 @@ export class AboutCommand extends Command {
         return interaction.reply({
             embeds: [
                 new MessageEmbed()
-                    .setTitle(`**LegiBot ${ANBOT_VERSION}${ANBOT_DEV ? '-dev' : ''} (${ANBOT_HASH})**\n`)
-                    .setURL(ANBOT_REPOSITORY)
+                    .setTitle(`**LegiBot ${LEGIBOT_VERSION}${LEGIBOT_DEV ? '-dev' : ''} (${LEGIBOT_HASH})**\n`)
+                    .setURL(LEGIBOT_REPOSITORY)
                     .setThumbnail('attachment://logo.png')
                     .setDescription("Bot Discord pour interragir avec l'asseblée nationale.")
                     .addField("Licence", "LegiBot est distribué sous licence [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html).")
-            ], files: [new MessageAttachment(`doc/logo/logo-transparent${ANBOT_DEV ? '-dev' : ''}.png`, 'logo.png')], ephemeral: true
+            ], files: [new MessageAttachment(`doc/logo/logo-transparent${LEGIBOT_DEV ? '-dev' : ''}.png`, 'logo.png')], ephemeral: true
         });
     }
 }

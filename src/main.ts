@@ -22,11 +22,11 @@ import { HardConfig } from './config/HardConfig';
 import { SoftConfig } from './config/SoftConfig';
 import { UptimeRobot } from './UptimeRobot';
 import { Logger } from './utils/Logger';
-import { ANBOT_DEV, ANBOT_HASH, ANBOT_VERSION } from './version';
+import { LEGIBOT_DEV, LEGIBOT_HASH, LEGIBOT_VERSION } from './version';
 
 export const main = async () => {
-    Logger.getLogger('Main').info(`Starting LegiBot ${ANBOT_VERSION}${ANBOT_DEV ? '-dev' : ''} (${ANBOT_HASH})`);
-    if (ANBOT_DEV)
+    Logger.getLogger('Main').info(`Starting LegiBot ${LEGIBOT_VERSION}${LEGIBOT_DEV ? '-dev' : ''} (${LEGIBOT_HASH})`);
+    if (LEGIBOT_DEV)
         Logger.getLogger('Main').warn("This is a developpement build of LegiBot!");
 
     SoftConfig.load();

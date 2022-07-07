@@ -34,10 +34,10 @@ export class GenVersionConsoleCommand extends ConsoleCommand {
         this.logger = Logger.getLogger("Refresh");
         const pkg = JSON.parse(readFileSync("./package.json").toString("utf-8"));
         this.values = {
-            ANBOT_HASH: execSync('git rev-parse HEAD').toString().trim().slice(0,7),
-            ANBOT_VERSION: pkg.version,
-            ANBOT_DEV: execSync('git tag --contains HEAD').toString().trim() === "",
-            ANBOT_REPOSITORY: pkg.repository
+            LEGIBOT_HASH: execSync('git rev-parse HEAD').toString().trim().slice(0,7),
+            LEGIBOT_VERSION: pkg.version,
+            LEGIBOT_DEV: execSync('git tag --contains HEAD').toString().trim() === "",
+            LEGIBOT_REPOSITORY: pkg.repository
         }
     }
 
