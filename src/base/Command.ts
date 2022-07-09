@@ -17,6 +17,7 @@
  * along with LegiBot.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { APIApplicationCommandOption } from "discord-api-types/v9";
 import { CommandInteraction } from "discord.js";
 
 export class Command {
@@ -34,7 +35,7 @@ export class Command {
         throw new TypeError('Abstract method "getDescription" of class "Command" cannot be used directly');
     }
 
-    getOptions(): string[] {
+    getOptions(): APIApplicationCommandOption[] {
         return [];
     }
 
