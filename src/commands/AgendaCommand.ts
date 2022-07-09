@@ -20,7 +20,7 @@
 import { APIApplicationCommandOption, ApplicationCommandOptionType } from 'discord-api-types/v9';
 import { CommandInteraction } from 'discord.js';
 import moment from 'moment';
-import { AgendaEntry, ANAgendaAPI } from '../api/ANAgendaAPI';
+import { AgendaEntry, AgendaFilter, ANAgendaAPI } from '../api/ANAgendaAPI';
 import { Command } from '../base/Command';
 
 export class AgendaCommand extends Command {
@@ -44,7 +44,22 @@ export class AgendaCommand extends Command {
             options: [{
                 type: ApplicationCommandOptionType.String,
                 name: 'date',
-                description: 'Date (JJ/MM/AAAA)'
+                description: 'Date (JJ/MM/AAAA)',
+            }, {
+                type: ApplicationCommandOptionType.Boolean,
+                name: 'public',
+                description: 'Inclure les séances publiques (défaut: oui)',
+                required: false
+            }, {
+                type: ApplicationCommandOptionType.Boolean,
+                name: 'commission',
+                description: 'Inclure les séances en commission (défaut: oui)',
+                required: false
+            }, {
+                type: ApplicationCommandOptionType.Boolean,
+                name: 'meetings',
+                description: 'Inclure les réunions des députés (défaut: non)',
+                required: false
             }]
         }, {
             type: ApplicationCommandOptionType.Subcommand,
@@ -54,6 +69,21 @@ export class AgendaCommand extends Command {
                 type: ApplicationCommandOptionType.String,
                 name: 'date',
                 description: 'Date (JJ/MM/AAAA)'
+            }, {
+                type: ApplicationCommandOptionType.Boolean,
+                name: 'public',
+                description: 'Inclure les séances publiques (défaut: oui)',
+                required: false
+            }, {
+                type: ApplicationCommandOptionType.Boolean,
+                name: 'commission',
+                description: 'Inclure les séances en commission (défaut: oui)',
+                required: false
+            }, {
+                type: ApplicationCommandOptionType.Boolean,
+                name: 'meetings',
+                description: 'Inclure les réunions des députés (défaut: non)',
+                required: false
             }]
         }]
     }
@@ -71,16 +101,26 @@ export class AgendaCommand extends Command {
             }
         }
 
+        const filter: AgendaFilter = {
+            commission: interaction.options.getBoolean('commission', false) ?? true,
+            public: interaction.options.getBoolean('public', false) ?? true,
+            meetings: interaction.options.getBoolean('meetings', false) ?? false
+        };
+        console.log(filter);
+        console.log(interaction.options.getBoolean('commission', false));
+        console.log(interaction.options.getBoolean('public', false));
+        console.log(interaction.options.getBoolean('meetings', false));
+
         await interaction.deferReply({ ephemeral: true });
         let message = '';
         let agenda: AgendaEntry[] = [];
         switch (interaction.options.getSubcommand()) {
             case 'day':
-                agenda = await ANAgendaAPI.day_agenda(date);
+                agenda = await ANAgendaAPI.day_agenda(date, filter);
                 message += `**Agenda du ${moment(date).format('DD/MM/YYYY')}**\n\n`;
                 break;
             case 'week':
-                agenda = await ANAgendaAPI.week_agenda(date);
+                agenda = await ANAgendaAPI.week_agenda(date, filter);
                 message += `**Agenda de la semaine du ${moment(date).format('DD/MM/YYYY')}**\n\n`;
                 break;
             default:
@@ -90,7 +130,7 @@ export class AgendaCommand extends Command {
 
         for (const event of agenda) {
             message += event.title + '\n';
-            message += `*Le ${moment(event.start).format("DD/MM/YYYY")} de ${moment(event.start).format("HH:mm")} à ${moment(event.end).format("HH:mm")}*\n\n`;
+            message += `*Le ${moment(event.date).format("DD/MM/YYYY")} à ${moment(event.date).format("HH:mm")}*\n\n`;
         }
 
         await interaction.editReply({ content: message });

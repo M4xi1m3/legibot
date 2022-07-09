@@ -28,9 +28,14 @@ export type AgendaPeriode = 'journalier' | 'hebdomadaire';
 export type AgendaEntry = {
     title: string,
     description?: string,
-    start: string,
-    end: string;
+    date: string
 };
+
+export type AgendaFilter = {
+    meetings: boolean,
+    commission: boolean,
+    public: boolean
+}
 
 class ANAgendaAPIManager extends Api {
 
@@ -43,14 +48,13 @@ class ANAgendaAPIManager extends Api {
     }
 
     async load_agenda(date: Date, periode: AgendaPeriode) {
-        console.log(`https://www2.assemblee-nationale.fr/agendas/ics/${this.dateFormat(date)}/${periode}`);
         return await ical.async.fromURL(`https://www2.assemblee-nationale.fr/agendas/ics/${this.dateFormat(date)}/${periode}`);
     }
 
-    async week_agenda(date: Date): Promise<AgendaEntry[]> {
+    async week_agenda(date: Date, filter?: AgendaFilter): Promise<AgendaEntry[]> {
         const year = moment(date).year();
         const week = moment(date).isoWeek();
-        return await Cache.cache(`an.agenda.${year}.${week}`, 24 * 3600, async () => {
+        const out: AgendaEntry[] = await Cache.cache(`an.agenda.${year}.${week}`, 24 * 3600, async () => {
             const agenda = await this.load_agenda(date, 'hebdomadaire');
             const out: AgendaEntry[] = [];
 
@@ -62,24 +66,32 @@ class ANAgendaAPIManager extends Api {
                 out.push({
                     title: event.summary,
                     description: event.description === '' ? undefined : decode(event.description).replace("<br>", "\n").replace("<br/>", "\n"),
-                    start: event.start.toISOString(),
-                    end: event.end.toISOString()
+                    date: event.start.toISOString()
                 });
             }
 
             return out;
         });
+
+        if (filter === undefined)
+            return out;
+
+        return out.filter((event: AgendaEntry) => {
+            return (event.title.startsWith('Réunion - ') && filter.meetings)
+                || (event.title.startsWith('Réunion de la commission') && filter.commission)
+                || (event.title.includes('séance publique') && filter.public);
+        })
     }
 
-    async day_agenda(date: Date): Promise<AgendaEntry[]> {
-        const week = await this.week_agenda(date);
+    async day_agenda(date: Date, filter?: AgendaFilter): Promise<AgendaEntry[]> {
+        const week = await this.week_agenda(date, filter);
 
         const out: AgendaEntry[] = [];
 
         const d = moment(date);
 
         for(const event of week) {
-            if (d.isSame(event.start, 'day') || d.isSame(event.end, 'day')) {
+            if (d.isSame(event.date, 'day')) {
                 out.push(event);
             }
         }
