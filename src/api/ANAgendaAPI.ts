@@ -28,7 +28,8 @@ export type AgendaPeriode = 'journalier' | 'hebdomadaire';
 export type AgendaEntry = {
     title: string,
     description?: string,
-    date: string
+    date: string,
+    color: string
 };
 
 export type AgendaFilter = {
@@ -64,9 +65,17 @@ class ANAgendaAPIManager extends Api {
                     continue;
 
                 out.push({
-                    title: event.summary,
+                    title: event.summary.replace("Réunion de la c", "C"),
                     description: event.description === '' ? undefined : decode(event.description).replace("<br>", "\n").replace("<br/>", "\n"),
-                    date: event.start.toISOString()
+                    date: event.start.toISOString(),
+                    color: (() => {
+                        if (event.summary.startsWith('Réunion - '))
+                            return "#ED4245";
+                        else if (event.summary.includes('séance publique'))
+                            return "#57F287";
+                        else
+                            return "#5865F2";
+                    })()
                 });
             }
 
@@ -78,7 +87,7 @@ class ANAgendaAPIManager extends Api {
 
         return out.filter((event: AgendaEntry) => {
             return (event.title.startsWith('Réunion - ') && filter.meetings)
-                || (event.title.startsWith('Réunion de la commission') && filter.commission)
+                || (event.title.startsWith('Commission') && filter.commission)
                 || (event.title.includes('séance publique') && filter.public);
         })
     }
