@@ -580,6 +580,11 @@ camelcase@^6.2.0:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-6.3.0.tgz#5685b95eb209ac9c0c177467778c9c84df58ba9a"
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
+canvas-hypertxt@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/canvas-hypertxt/-/canvas-hypertxt-0.0.4.tgz#af97e196f42adf992ffde20292ad31f2b6cf2c74"
+  integrity sha512-g7oIt2+tX+vEpj8k7rbCPIOshpzKpNn78xHQi3H6iqVnMXbPcAL/ovy55lfV+TloFDxY4hONvbu3AavN3rxpXA==
+
 canvas@^2.9.3:
   version "2.9.3"
   resolved "https://registry.yarnpkg.com/canvas/-/canvas-2.9.3.tgz#8723c4f970442d4cdcedba5221579f9660a58bdb"
