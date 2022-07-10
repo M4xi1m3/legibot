@@ -18,15 +18,17 @@
  */
 
 import { Canvas, CanvasRenderingContext2D, createCanvas } from "canvas";
+import { split } from "canvas-hypertxt";
 import moment from "moment";
 import { AgendaEntry } from "../api/ANAgendaAPI";
 
 type DateRange = { start: Date, end: Date };
 type OrganizedAgenda = { [index: string]: AgendaEntry[] };
+type OrganizedSplitAgenda = { [index: string]: AgendaEntry[][] };
 type Dimension = { width: number, height: number };
 
-const AGENDA_CELL_HEIGHT = 43 * 2;
-const AGENDA_CELL_WIDTH = 119 * 2;
+const AGENDA_CELL_HEIGHT = 48*2;
+const AGENDA_CELL_WIDTH = 128*4;
 const AGENDA_CELL_BG = "#36393e";
 const AGENDA_CELL_FG = "#ffffff";
 const AGENDA_HOUR_WIDTH = 64;
@@ -63,7 +65,8 @@ class AgendaManager {
             end = Math.max(moment(agenda[k][agenda[k].length - 1].date).hour(), end);
         }
 
-        end += 1;
+        start -= 1;
+        end += 2;
 
         return { start, end };
     }
@@ -84,6 +87,46 @@ class AgendaManager {
         while (current <= range.end) {
             out[moment(current).format("DD/MM/YYYY")] = [];
             current.setDate(current.getDate() + 1);
+        }
+
+        return out;
+    }
+
+    private split(agenda: OrganizedAgenda): OrganizedSplitAgenda {
+        const out: OrganizedSplitAgenda = {};
+
+        for (const day of Object.keys(agenda)) {
+            const tmp: AgendaEntry[][] = [];
+
+            events_loop:
+            for (const event of agenda[day]) {
+                const start = moment(event.date).toDate().getTime();
+                const end = moment(event.date).add(2, 'hour').toDate().getTime();
+
+                timelines_loop:
+                // Iterate timelines
+                for (const timeline of tmp) {
+                    for (const t_event of timeline) {
+                        const t_start = moment(t_event.date).toDate().getTime();
+                        const t_end = moment(t_event.date).add(2, 'hour').toDate().getTime();
+
+                        // If we overlap, we try another timeline
+                        if (start < t_end && end > t_start) {
+                            continue timelines_loop;
+                        }
+                    }
+
+                    // We didn't overlap, we can add
+                    timeline.push(event);
+                    // Go to next event
+                    continue events_loop;
+                }
+
+                // We didn't find a suitable timeline, add one
+                tmp.push([event]);
+            }
+
+            out[day] = tmp;
         }
 
         return out;
@@ -174,30 +217,42 @@ class AgendaManager {
     private drawForeground(agenda: OrganizedAgenda, ctx: CanvasRenderingContext2D) {
         const { start, end } = this.getHourRange(agenda);
 
-        for (let column = 0; column < Object.keys(agenda).length; column++) {
-            const date = Object.keys(agenda)[column];
-            const x = AGENDA_HOUR_WIDTH + AGENDA_HOUR_BORDER + column * (AGENDA_CELL_WIDTH + AGENDA_CELL_BORDER);
+        const splitted = this.split(agenda)
 
-            for (const event of agenda[date]) {
-                const m = moment(event.date);
-                const y = Math.round(AGENDA_DATE_HEIGHT + AGENDA_DATE_BORDER + (m.hour() + m.minute() / 60 - start) * (AGENDA_CELL_HEIGHT + AGENDA_CELL_BORDER));
+        for (let column = 0; column < Object.keys(splitted).length; column++) {
+            const date = Object.keys(splitted)[column];
 
-                ctx.fillStyle = AGENDA_EVENT_BG;
-                ctx.fillRect(
-                    x,
-                    y,
-                    AGENDA_CELL_WIDTH,
-                    AGENDA_TEXT_HEIGHT + 4
-                );
+            for (let timeline = 0; timeline < splitted[date].length; timeline++) {
+                const x = Math.round(timeline / splitted[date].length * AGENDA_CELL_WIDTH) + AGENDA_HOUR_WIDTH + AGENDA_HOUR_BORDER + column * (AGENDA_CELL_WIDTH + AGENDA_CELL_BORDER);
+                const w = Math.round(AGENDA_CELL_WIDTH / splitted[date].length) - 1;
 
-                ctx.fillStyle = AGENDA_CELL_FG;
-                ctx.textAlign = 'left';
-                ctx.fillText(
-                    event.title,
-                    x + 1,
-                    y + AGENDA_TEXT_HEIGHT + 2,
-                    AGENDA_CELL_WIDTH - 1
-                );
+                for (const event of splitted[date][timeline]) {
+                    const m = moment(event.date);
+                    const y = Math.round(AGENDA_DATE_HEIGHT + AGENDA_DATE_BORDER + (m.hour() + m.minute() / 60 - start) * (AGENDA_CELL_HEIGHT + AGENDA_CELL_BORDER));
+
+                    const s = split(ctx, event.title, ctx.font, w - 4, false);
+
+                    ctx.fillStyle = event.color;
+                    ctx.fillRect(
+                        x,
+                        y,
+                        w,
+                        12 * 14 + 4
+                    );
+
+                    ctx.fillStyle = event.color === "#57F287" ? "#000000" : AGENDA_CELL_FG;
+                    ctx.textAlign = 'left';
+
+                    for (let i = 0; i < Math.min(12, s.length); i++) {
+                        ctx.fillText(
+                            s[i],
+                            x + 2,
+                            y + AGENDA_TEXT_HEIGHT + 2 + i * 14,
+                            w - 4
+                        );
+                    }
+
+                }
             }
         }
     }
@@ -207,8 +262,6 @@ class AgendaManager {
 
         const { canvas, ctx } = this.createBackground(agenda);
         this.drawForeground(agenda, ctx);
-
-        console.log(agenda);
 
         return canvas.toBuffer();
     }
