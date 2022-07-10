@@ -18,10 +18,11 @@
  */
 
 import { APIApplicationCommandOption, ApplicationCommandOptionType } from 'discord-api-types/v9';
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, MessageAttachment } from 'discord.js';
 import moment from 'moment';
 import { AgendaEntry, AgendaFilter, ANAgendaAPI } from '../api/ANAgendaAPI';
 import { Command } from '../base/Command';
+import { Agenda } from '../utils/Agenda';
 
 export class AgendaCommand extends Command {
     constructor() {
@@ -106,10 +107,6 @@ export class AgendaCommand extends Command {
             public: interaction.options.getBoolean('public', false) ?? true,
             meetings: interaction.options.getBoolean('meetings', false) ?? false
         };
-        console.log(filter);
-        console.log(interaction.options.getBoolean('commission', false));
-        console.log(interaction.options.getBoolean('public', false));
-        console.log(interaction.options.getBoolean('meetings', false));
 
         await interaction.deferReply({ ephemeral: true });
         let message = '';
@@ -128,11 +125,13 @@ export class AgendaCommand extends Command {
                 break;
         }
 
-        for (const event of agenda) {
-            message += event.title + '\n';
-            message += `*Le ${moment(event.date).format("DD/MM/YYYY")} à ${moment(event.date).format("HH:mm")}*\n\n`;
+        if (agenda.length === 0) {
+            await interaction.editReply({ content: "**Pas d'évènements**" });
+            return;
         }
 
-        await interaction.editReply({ content: message });
+        const tmp = await Agenda.renderAgenda(agenda);
+
+        await interaction.editReply({ content: message, files: [new MessageAttachment(tmp, 'agenda.png')] });
     }
 }
