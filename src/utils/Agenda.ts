@@ -25,8 +25,8 @@ type DateRange = { start: Date, end: Date };
 type OrganizedAgenda = { [index: string]: AgendaEntry[] };
 type Dimension = { width: number, height: number };
 
-const AGENDA_CELL_HEIGHT = 43*2;
-const AGENDA_CELL_WIDTH = 119*2;
+const AGENDA_CELL_HEIGHT = 43 * 2;
+const AGENDA_CELL_WIDTH = 119 * 2;
 const AGENDA_CELL_BG = "#36393e";
 const AGENDA_CELL_FG = "#ffffff";
 const AGENDA_HOUR_WIDTH = 64;
@@ -50,6 +50,22 @@ class AgendaManager {
         return events.sort((a: AgendaEntry, b: AgendaEntry) => (
             (new Date(a.date)).getTime() - (new Date(b.date)).getTime()
         ));
+    }
+
+    private getHourRange(agenda: OrganizedAgenda): { start: number, end: number } {
+        let start = 23;
+        let end = 0;
+
+        for (const k of Object.keys(agenda)) {
+            if (agenda[k].length === 0)
+                continue;
+            start = Math.min(moment(agenda[k][0].date).hour(), start);
+            end = Math.max(moment(agenda[k][agenda[k].length - 1].date).hour(), end);
+        }
+
+        end += 1;
+
+        return { start, end };
     }
 
     private getDateRange(events: AgendaEntry[]): DateRange {
@@ -86,16 +102,19 @@ class AgendaManager {
     }
 
     private getDimmensions(agenda: OrganizedAgenda): Dimension {
+        const { start, end } = this.getHourRange(agenda);
+
         return {
             width: AGENDA_HOUR_WIDTH + AGENDA_HOUR_BORDER - AGENDA_CELL_BORDER + (AGENDA_CELL_WIDTH + AGENDA_CELL_BORDER) * Object.keys(agenda).length,
-            height: AGENDA_DATE_HEIGHT + AGENDA_DATE_BORDER - AGENDA_CELL_BORDER + (AGENDA_CELL_HEIGHT + AGENDA_CELL_BORDER) * HOUR_NUMBER
+            height: AGENDA_DATE_HEIGHT + AGENDA_DATE_BORDER - AGENDA_CELL_BORDER + (AGENDA_CELL_HEIGHT + AGENDA_CELL_BORDER) * (end - start)
         };
     }
 
     private createBackground(agenda: OrganizedAgenda): { canvas: Canvas, ctx: CanvasRenderingContext2D } {
+        const { start, end } = this.getHourRange(agenda);
         const { width, height } = this.getDimmensions(agenda);
         const columns = Object.keys(agenda).length;
-        const rows = HOUR_NUMBER;
+        const rows = end - start;
 
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
@@ -124,7 +143,7 @@ class AgendaManager {
             );
             ctx.fillStyle = AGENDA_HOUR_FG;
             ctx.fillText(
-                `${(i + '').padStart(2, "0")}:00`,
+                `${(i + start + '').padStart(2, "0")}:00`,
                 AGENDA_HOUR_WIDTH - 3,
                 AGENDA_DATE_HEIGHT + i * (AGENDA_CELL_BORDER + AGENDA_CELL_HEIGHT) + AGENDA_TEXT_HEIGHT + 3,
                 AGENDA_HOUR_WIDTH
@@ -153,13 +172,15 @@ class AgendaManager {
     }
 
     private drawForeground(agenda: OrganizedAgenda, ctx: CanvasRenderingContext2D) {
+        const { start, end } = this.getHourRange(agenda);
+
         for (let column = 0; column < Object.keys(agenda).length; column++) {
             const date = Object.keys(agenda)[column];
             const x = AGENDA_HOUR_WIDTH + AGENDA_HOUR_BORDER + column * (AGENDA_CELL_WIDTH + AGENDA_CELL_BORDER);
-            
+
             for (const event of agenda[date]) {
                 const m = moment(event.date);
-                const y = Math.round(AGENDA_DATE_HEIGHT + AGENDA_DATE_BORDER + (m.hour() + m.minute() / 60) * (AGENDA_CELL_HEIGHT + AGENDA_CELL_BORDER));
+                const y = Math.round(AGENDA_DATE_HEIGHT + AGENDA_DATE_BORDER + (m.hour() + m.minute() / 60 - start) * (AGENDA_CELL_HEIGHT + AGENDA_CELL_BORDER));
 
                 ctx.fillStyle = AGENDA_EVENT_BG;
                 ctx.fillRect(
@@ -173,9 +194,9 @@ class AgendaManager {
                 ctx.textAlign = 'left';
                 ctx.fillText(
                     event.title,
-                    x,
+                    x + 1,
                     y + AGENDA_TEXT_HEIGHT + 2,
-                    AGENDA_CELL_WIDTH
+                    AGENDA_CELL_WIDTH - 1
                 );
             }
         }
