@@ -37,6 +37,7 @@
     "@discordjs/opus": "^0.8.0",
     "@discordjs/rest": "^0.5.0",
     "@discordjs/voice": "^0.10.0",
+    "@types/string-format": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^5.30.4",
     "@typescript-eslint/parser": "^5.30.4",
     "axios": "^0.27.2",
@@ -54,7 +55,8 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "node-ical": "^0.15.1",
-    "sodium": "^3.0.2"
+    "sodium": "^3.0.2",
+    "string-format": "^2.0.0"
   },
   "lint-staged": {
     "*.ts": "eslint --cache --fix",
