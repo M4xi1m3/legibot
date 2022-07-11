@@ -48,6 +48,7 @@ command.live.embed.select,Veuillez sélectionner une séance en cours.,Please se
 command.live.embed.nolive,Pas de direct en cours.,No live at the moment.
 command.live.embed.session,Séance,Session
 command.live.embed.listen,Écouter,Listen
+command.live.embed.watch,Regarder,Watch
 command.live.embed.refresh,Rafraîchir,Refresh
 command.live.joining,J’arrive…,I’m comming…
 ,,

@@ -86,6 +86,11 @@ export class LiveCommand extends Command {
                     new MessageButton().setCustomId("live_listen,null")
                         .setLabel(I18n.getI18n('command.live.embed.listen', locale))
                         .setStyle("PRIMARY")
+                        .setDisabled(true),
+                    new MessageButton()
+                        .setURL(`https://videos.assemblee-nationale.fr/direct`)
+                        .setLabel(I18n.getI18n('command.live.embed.watch', locale))
+                        .setStyle("LINK")
                         .setDisabled(true)
                 ).addComponents(
                     new MessageButton().setCustomId("live_reload,null")
@@ -142,12 +147,17 @@ export class LiveCommand extends Command {
                         .addOptions(selectable ?? [{ label: "ERROR", value: "ERROR" }])
                 ), new MessageActionRow().addComponents(
                     new MessageButton().setCustomId("live_listen," + selected)
-                    .setLabel(I18n.getI18n('command.live.embed.listen', locale))
+                        .setLabel(I18n.getI18n('command.live.embed.listen', locale))
                         .setStyle("PRIMARY")
-                        .setDisabled(selected === null)
+                        .setDisabled(selected === null),
+                    new MessageButton()
+                        .setURL(`https://videos.assemblee-nationale.fr/direct.${selected}`)
+                        .setLabel(I18n.getI18n('command.live.embed.watch', locale))
+                        .setStyle("LINK")
+                        .setDisabled(selected === null),
                 ).addComponents(
                     new MessageButton().setCustomId("live_reload," + selected)
-                    .setLabel(I18n.getI18n('command.live.embed.refresh', locale))
+                        .setLabel(I18n.getI18n('command.live.embed.refresh', locale))
                         .setStyle("SECONDARY")
                         .setEmoji(Emoji.refresh)
                 )]
@@ -197,7 +207,7 @@ export class LiveCommand extends Command {
     async reloadSeance(interaction: ButtonInteraction) {
         await interaction.deferUpdate();
         const flux = interaction.customId.split(",")[1];
-        interaction.editReply(await this.getMessageData(flux, interaction.locale));
+        interaction.editReply(await this.getMessageData(flux === "null" ? null : flux, interaction.locale));
     }
 
     async execute(interaction: CommandInteraction) {
