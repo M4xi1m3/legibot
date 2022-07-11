@@ -18,15 +18,17 @@
  */
 
 import { APIApplicationCommandOption, ApplicationCommandOptionType } from 'discord-api-types/v9';
-import { CommandInteraction, MessageAttachment } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageAttachment, MessageButton } from 'discord.js';
 import moment from 'moment';
 import { AgendaEntry, AgendaFilter, ANAgendaAPI } from '../api/ANAgendaAPI';
 import { Command } from '../base/Command';
+import { Bot } from '../Bot';
 import { Agenda } from '../utils/Agenda';
 
 export class AgendaCommand extends Command {
     constructor() {
         super();
+        Bot.registerButton("agenda_button", this.agnedaButton.bind(this));
     }
 
     getName() {
@@ -89,6 +91,57 @@ export class AgendaCommand extends Command {
         }]
     }
 
+    private async messageData(date: Date, period: "week" | "day", filter: AgendaFilter) {
+        let message = '';
+        let agenda: AgendaEntry[] = [];
+        switch (period) {
+            case 'day':
+                agenda = await ANAgendaAPI.day_agenda(date, filter);
+                message += `**Agenda du ${moment(date).format('DD/MM/YYYY')}**\n\n`;
+                break;
+            case 'week':
+                agenda = await ANAgendaAPI.week_agenda(date, filter);
+                message += `**Agenda de la semaine du ${moment(date).format('DD/MM/YYYY')}**\n\n`;
+                break;
+        }
+
+        let files: MessageAttachment[] = [];
+
+        if (agenda.length === 0) {
+            message += "*Pas d'évènements*";
+        } else {
+            files = [new MessageAttachment(await Agenda.renderAgenda(agenda), 'agenda.png')];
+        }
+
+        const row = new MessageActionRow().addComponents(
+            new MessageButton()
+                .setCustomId(`agenda_button,${moment(date).subtract(1, period).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
+                .setLabel(period === "week" ? "Semaine précédante" : "Jour précédant")
+                .setStyle("PRIMARY")
+        ).addComponents(
+            new MessageButton()
+                .setCustomId(`agenda_button,${moment(date).add(1, period).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
+                .setLabel(period === "week" ? "Semaine suivante" : "Jour suivant")
+                .setStyle("PRIMARY")
+        )
+
+        return { content: message, files, components: [row] };
+    }
+
+    async agnedaButton(interaction: ButtonInteraction) {
+        await interaction.deferUpdate();
+        const [_, d, p, f] = interaction.customId.split(",");
+        const date = moment(d, "YYYY-MM-DD").toDate();
+        const period = p as "week" | "day";
+        const filter: AgendaFilter = {
+            commission: f.includes('C'),
+            meetings: f.includes('M'),
+            public: f.includes('P')
+        };
+
+        await interaction.editReply(await this.messageData(date, period, filter));
+    }
+
     async execute(interaction: CommandInteraction) {
         const date_string = interaction.options.getString('date', false);
         let date = new Date();
@@ -109,29 +162,6 @@ export class AgendaCommand extends Command {
         };
 
         await interaction.deferReply({ ephemeral: true });
-        let message = '';
-        let agenda: AgendaEntry[] = [];
-        switch (interaction.options.getSubcommand()) {
-            case 'day':
-                agenda = await ANAgendaAPI.day_agenda(date, filter);
-                message += `**Agenda du ${moment(date).format('DD/MM/YYYY')}**\n\n`;
-                break;
-            case 'week':
-                agenda = await ANAgendaAPI.week_agenda(date, filter);
-                message += `**Agenda de la semaine du ${moment(date).format('DD/MM/YYYY')}**\n\n`;
-                break;
-            default:
-                agenda = [];
-                break;
-        }
-
-        if (agenda.length === 0) {
-            await interaction.editReply({ content: "**Pas d'évènements**" });
-            return;
-        }
-
-        const tmp = await Agenda.renderAgenda(agenda);
-
-        await interaction.editReply({ content: message, files: [new MessageAttachment(tmp, 'agenda.png')] });
+        await interaction.editReply(await this.messageData(date, interaction.options.getSubcommand() as "week" | "day", filter));
     }
 }
