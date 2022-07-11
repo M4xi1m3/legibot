@@ -9,3 +9,5 @@ db.sqlite
 .eslintcache
 dist/
 src/version.ts
+src/i18n.ts
+src/.~*
