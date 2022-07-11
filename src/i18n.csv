@@ -1,2 +1,56 @@
 name,fr,en-US
-test,Teste,Test
+bot.error,Une erreur est survenue lors du traitement de votre {type}.,An error occured while handling your {type}.
+bot.error.god,Vous n'êtes pas un Dieux.,You are not a god.
+,,
+command.about.name,apropos,about
+command.about.description,En apprendre plus sur LegiBot.,Learn more about LegiBot.
+command.about.embed.description,Bot Discord pour interagir avec l’assemblée nationale.,Discord Bot that interracts with the French national assembly.
+command.about.embed.license.title,Licence,License
+command.about.embed.license.text,LegiBot est distribué sous licence [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.fr.html).,LegiBot is licensed under [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
+,,
+command.agenda.name,agenda,agenda
+command.agenda.description,Consulter l'agenda de l'Assemblée Nationale.,Consult the agenda of the National Assembly.
+,,
+command.agenda.option.day.name,jour,day
+command.agenda.option.day.description,Agenda du jour,Agenda of the day
+command.agenda.option.week.name,semaine,week
+command.agenda.option.week.description,Agenda de la semaine,Agenda of the week
+command.agenda.option.date.name,date,date
+command.agenda.option.date.description,Date (JJ/MM/AAAA),Date (DD/MM/YYYY)
+command.agenda.option.public.name,publique,public
+command.agenda.option.public.description,Inclure les séances publiques (défaut: oui),Include public sessions (default : yes)
+command.agenda.option.commission.name,commission,comittee
+command.agenda.option.commission.description,Inclure les séances en commission (défaut: oui),Include committee sessions (default: yes)
+command.agenda.option.meetings.name,reunions,meeting
+command.agenda.option.meetings.description,Inclure les réunions des députés (défaut: non),Include MP meetings (default: no)
+,,
+command.agenda.reply.noevents,Pas d’évènements,No events
+command.agenda.reply.day.title,Agenda du {date},Agenda of {date}
+command.agenda.reply.day.next,Jour suivant,Next day
+command.agenda.reply.day.previous,Jour précédant,Previous day
+command.agenda.reply.week.title,Agenda de la semaine du {date},Agenda for the week of {date}
+command.agenda.reply.week.next,Semaine suivante,Next week
+command.agenda.reply.week.previous,Semaine précédente,Previous week
+command.agenda.reply.invalid.date,Date invalide !,Invalid date!
+,,
+command.invite.name,invite,invite
+command.invite.description,Inviter LegiBot sur un autre serveur,Invite LegiBot on another server
+command.invite.reply,Voici un lien d'invitation :,Here is your invite link:
+,,
+command.live.name,direct,live
+command.live.description,Écouter l’assemblée nationale en direct,Listen to the national assembly’s livestream
+,,
+command.live.error,Une erreur est survenue !,An error occured!
+command.live.error.voice,Vous devez être dans un canal vocal !,You must be in a voice channel!
+command.live.error.notlive,Ce flux n'est plus en direct.,This stream isn’t live anymore.
+command.live.embed.title,Direct Assemblée Nationale,National Assembly’s Live
+command.live.embed.select,Veuillez sélectionner une séance en cours.,Please select a live session.
+command.live.embed.nolive,Pas de direct en cours.,No live at the moment.
+command.live.embed.session,Séance,Session
+command.live.embed.listen,Écouter,Listen
+command.live.embed.refresh,Rafraîchir,Refresh
+command.live.joining,J’arrive…,I’m comming…
+,,
+command.ping.title,ping,ping
+command.ping.description,Vérifie si LegiBot est vivant.,Checks if LegiBot is alive.
+command.ping.pong,Pong !,Pong!

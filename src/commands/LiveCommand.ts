@@ -24,6 +24,7 @@ import { Command } from '../base/Command';
 import { Bot } from '../Bot';
 import { Audio } from '../utils/Audio';
 import { Emoji } from '../utils/Emoji';
+import { I18n } from '../utils/I18n';
 
 export class LiveCommand extends Command {
     constructor() {
@@ -35,14 +36,6 @@ export class LiveCommand extends Command {
 
     getName() {
         return "live";
-    }
-
-    getDescription() {
-        return "Test";
-    }
-
-    getConfigs() {
-        return ["command.ping.message"];
     }
 
     private getSelectable(live: LiveData, edito: EditoData): MessageSelectOptionData[] | undefined {
@@ -68,35 +61,35 @@ export class LiveCommand extends Command {
         return out;
     }
 
-    private async getMessageData(selected: string | null = null): Promise<MessagePayload | WebhookEditMessageOptions> {
+    private async getMessageData(selected: string | null = null, locale: string): Promise<MessagePayload | WebhookEditMessageOptions> {
         let live: LiveData, edito: EditoData;
         try {
             live = await ANLiveAPI.live();
             edito = await ANLiveAPI.edito();
         } catch (e: any) {
-            return { content: "Une erreur est survenue !" };
+            return { content: I18n.getI18n('command.live.error', locale) };
         }
 
         const selectable = this.getSelectable(live, edito);
 
         if (selectable === undefined || live.length === 0) {
             const embed = new MessageEmbed();
-            embed.setTitle("Live Assemblée Nationale");
-            embed.setDescription("Pas de direct en cours.");
+            embed.setTitle(I18n.getI18n('command.live.embed.title', locale));
+            embed.setDescription(I18n.getI18n('command.live.embed.nolive', locale));
             return {
                 embeds: [embed], components: [new MessageActionRow().addComponents(
                     new MessageSelectMenu().setCustomId("live_seance")
-                        .setPlaceholder("Séance")
+                        .setPlaceholder(I18n.getI18n('command.live.embed.session', locale))
                         .addOptions(selectable ?? [{ label: "ERROR", value: "ERROR" }])
                         .setDisabled(true)
                 ), new MessageActionRow().addComponents(
                     new MessageButton().setCustomId("live_listen,null")
-                        .setLabel("Écouter")
+                        .setLabel(I18n.getI18n('command.live.embed.listen', locale))
                         .setStyle("PRIMARY")
                         .setDisabled(true)
                 ).addComponents(
                     new MessageButton().setCustomId("live_reload,null")
-                        .setLabel("Rafraîchir")
+                        .setLabel(I18n.getI18n('command.live.embed.refresh', locale))
                         .setStyle("SECONDARY")
                         .setEmoji(Emoji.refresh)
                 )]
@@ -105,13 +98,13 @@ export class LiveCommand extends Command {
             const embed = new MessageEmbed();
 
             if (selected === null || selected === "null") {
-                embed.setTitle("Live Assemblée Nationale");
-                embed.setDescription("Veuillez sélectionner une séance en cours.");
+                embed.setTitle(I18n.getI18n('command.live.embed.title', locale));
+                embed.setDescription(I18n.getI18n('command.live.embed.select', locale));
             } else {
                 const diffusions = edito.diffusion.filter(v => v.flux + "" === selected);
                 if (diffusions.length === 0) {
                     embed.setTitle("Live Assemblée Nationale");
-                    embed.setDescription("Veuillez sélectionner une séance en cours.");
+                    embed.setDescription(I18n.getI18n('command.live.embed.select', locale));
                 } else {
                     let diffusion: DiffusionData | undefined = undefined;
                     if (diffusions.length === 1) {
@@ -145,16 +138,16 @@ export class LiveCommand extends Command {
             return {
                 embeds: [embed], components: [new MessageActionRow().addComponents(
                     new MessageSelectMenu().setCustomId("live_seance")
-                        .setPlaceholder("Séance")
+                        .setPlaceholder(I18n.getI18n('command.live.embed.session', locale))
                         .addOptions(selectable ?? [{ label: "ERROR", value: "ERROR" }])
                 ), new MessageActionRow().addComponents(
                     new MessageButton().setCustomId("live_listen," + selected)
-                        .setLabel("Écouter")
+                    .setLabel(I18n.getI18n('command.live.embed.listen', locale))
                         .setStyle("PRIMARY")
                         .setDisabled(selected === null)
                 ).addComponents(
                     new MessageButton().setCustomId("live_reload," + selected)
-                        .setLabel("Rafraîchir")
+                    .setLabel(I18n.getI18n('command.live.embed.refresh', locale))
                         .setStyle("SECONDARY")
                         .setEmoji(Emoji.refresh)
                 )]
@@ -169,7 +162,7 @@ export class LiveCommand extends Command {
             return;
 
         if (member.voice.channelId === null) {
-            interaction.reply({ content: "Vous devez être dans un canal vocal !", ephemeral: true });
+            interaction.reply({ content: I18n.getI18n('command.live.error.voice', interaction.locale), ephemeral: true });
             return;
         }
 
@@ -178,11 +171,11 @@ export class LiveCommand extends Command {
         try {
             const live = await ANLiveAPI.live();
             if (live.find((v) => v.flux === flux) === undefined) {
-                interaction.reply({ content: "Ce flux n'est plus en direct.", ephemeral: true });
+                interaction.reply({ content: I18n.getI18n('command.live.error.notlive', interaction.locale), ephemeral: true });
                 return;
             }
         } catch (e: any) {
-            interaction.reply({ content: "Une erreur est survenue !", ephemeral: true });
+            interaction.reply({ content: I18n.getI18n('command.live.error', interaction.locale), ephemeral: true });
             return;
         }
 
@@ -192,23 +185,23 @@ export class LiveCommand extends Command {
             adapterCreator: member.guild.voiceAdapterCreator,
         });
 
-        interaction.reply({ content: "J'arrive ^^", ephemeral: true });
+        interaction.reply({ content: I18n.getI18n('command.live.joining', interaction.locale), ephemeral: true });
     }
 
     async selectSeance(interaction: SelectMenuInteraction) {
         await interaction.deferUpdate();
         const select = interaction.values[0];
-        interaction.editReply(await this.getMessageData(select));
+        interaction.editReply(await this.getMessageData(select, interaction.locale));
     }
 
     async reloadSeance(interaction: ButtonInteraction) {
         await interaction.deferUpdate();
         const flux = interaction.customId.split(",")[1];
-        interaction.editReply(await this.getMessageData(flux));
+        interaction.editReply(await this.getMessageData(flux, interaction.locale));
     }
 
     async execute(interaction: CommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
-        await interaction.editReply(await this.getMessageData(null));
+        await interaction.editReply(await this.getMessageData(null, interaction.locale));
     }
 }

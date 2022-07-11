@@ -19,6 +19,7 @@
 
 import { APIApplicationCommandOption } from "discord-api-types/v9";
 import { CommandInteraction } from "discord.js";
+import { I18nKey } from "../utils/I18n";
 
 export class Command {
     protected constructor() {
@@ -31,8 +32,12 @@ export class Command {
         throw new TypeError('Abstract method "getName" of class "Command" cannot be used directly');
     }
 
-    getDescription(): string {
-        throw new TypeError('Abstract method "getDescription" of class "Command" cannot be used directly');
+    getI18nName(): I18nKey {
+        return `command.${this.getName()}.name`;
+    }
+
+    getI18nDescription(): I18nKey {
+        return `command.${this.getName()}.description`;
     }
 
     getOptions(): APIApplicationCommandOption[] {

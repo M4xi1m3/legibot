@@ -19,6 +19,7 @@
 
 import { CommandInteraction, MessageAttachment, MessageEmbed } from 'discord.js';
 import { Command } from '../base/Command';
+import { I18n } from '../utils/I18n';
 import { LEGIBOT_DEV, LEGIBOT_HASH, LEGIBOT_REPOSITORY, LEGIBOT_VERSION } from '../version';
 
 export class AboutCommand extends Command {
@@ -30,14 +31,6 @@ export class AboutCommand extends Command {
         return "about";
     }
 
-    getDescription() {
-        return "En apprendre plus sur LegiBot.";
-    }
-
-    getConfigs() {
-        return ["command.about.message"];
-    }
-
     async execute(interaction: CommandInteraction) {
         return interaction.reply({
             embeds: [
@@ -45,8 +38,10 @@ export class AboutCommand extends Command {
                     .setTitle(`**LegiBot ${LEGIBOT_VERSION}${LEGIBOT_DEV ? '-dev' : ''} (${LEGIBOT_HASH})**\n`)
                     .setURL(LEGIBOT_REPOSITORY)
                     .setThumbnail('attachment://logo.png')
-                    .setDescription("Bot Discord pour interragir avec l'asseblée nationale.")
-                    .addField("Licence", "LegiBot est distribué sous licence [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html).")
+                    .setDescription(I18n.getI18n("command.about.embed.description", interaction.locale))
+                    .addField(
+                        I18n.getI18n("command.about.embed.license.title", interaction.locale),
+                        I18n.getI18n("command.about.embed.license.text", interaction.locale))
             ], files: [new MessageAttachment(`doc/logo/logo-transparent${LEGIBOT_DEV ? '-dev' : ''}.png`, 'logo.png')], ephemeral: true
         });
     }

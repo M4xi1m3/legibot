@@ -24,6 +24,7 @@ import { AgendaEntry, AgendaFilter, ANAgendaAPI } from '../api/ANAgendaAPI';
 import { Command } from '../base/Command';
 import { Bot } from '../Bot';
 import { Agenda } from '../utils/Agenda';
+import { I18n } from '../utils/I18n';
 
 export class AgendaCommand extends Command {
     constructor() {
@@ -35,80 +36,63 @@ export class AgendaCommand extends Command {
         return "agenda";
     }
 
-    getDescription() {
-        return "Consulter l'agenda de l'Assemblée Nationale.";
-    }
-
     getOptions(): APIApplicationCommandOption[] {
         return [{
             type: ApplicationCommandOptionType.Subcommand,
-            name: 'day',
-            description: 'Agenda du jour',
+            ...I18n.argumentI18n(this, 'day'),
             options: [{
                 type: ApplicationCommandOptionType.String,
-                name: 'date',
-                description: 'Date (JJ/MM/AAAA)',
+                ...I18n.argumentI18n(this, 'date'),
             }, {
                 type: ApplicationCommandOptionType.Boolean,
-                name: 'public',
-                description: 'Inclure les séances publiques (défaut: oui)',
+                ...I18n.argumentI18n(this, 'public'),
                 required: false
             }, {
                 type: ApplicationCommandOptionType.Boolean,
-                name: 'commission',
-                description: 'Inclure les séances en commission (défaut: oui)',
+                ...I18n.argumentI18n(this, 'commission'),
                 required: false
             }, {
                 type: ApplicationCommandOptionType.Boolean,
-                name: 'meetings',
-                description: 'Inclure les réunions des députés (défaut: non)',
+                ...I18n.argumentI18n(this, 'meetings'),
                 required: false
             }]
         }, {
             type: ApplicationCommandOptionType.Subcommand,
-            name: 'week',
-            description: 'Agenda de la semaine',
+            ...I18n.argumentI18n(this, 'week'),
             options: [{
                 type: ApplicationCommandOptionType.String,
-                name: 'date',
-                description: 'Date (JJ/MM/AAAA)'
+                ...I18n.argumentI18n(this, 'date'),
             }, {
                 type: ApplicationCommandOptionType.Boolean,
-                name: 'public',
-                description: 'Inclure les séances publiques (défaut: oui)',
+                ...I18n.argumentI18n(this, 'public'),
                 required: false
             }, {
                 type: ApplicationCommandOptionType.Boolean,
-                name: 'commission',
-                description: 'Inclure les séances en commission (défaut: oui)',
+                ...I18n.argumentI18n(this, 'commission'),
                 required: false
             }, {
                 type: ApplicationCommandOptionType.Boolean,
-                name: 'meetings',
-                description: 'Inclure les réunions des députés (défaut: non)',
+                ...I18n.argumentI18n(this, 'meetings'),
                 required: false
             }]
         }]
     }
 
-    private async messageData(date: Date, period: "week" | "day", filter: AgendaFilter) {
+    private async messageData(date: Date, period: "week" | "day", filter: AgendaFilter, locale: string) {
         let message = '';
         let agenda: AgendaEntry[] = [];
-        switch (period) {
-            case 'day':
-                agenda = await ANAgendaAPI.day_agenda(date, filter);
-                message += `**Agenda du ${moment(date).format('DD/MM/YYYY')}**\n\n`;
-                break;
-            case 'week':
-                agenda = await ANAgendaAPI.week_agenda(date, filter);
-                message += `**Agenda de la semaine du ${moment(date).format('DD/MM/YYYY')}**\n\n`;
-                break;
+        if (period === 'day') {
+            agenda = await ANAgendaAPI.day_agenda(date, filter);
+        } else {
+            agenda = await ANAgendaAPI.week_agenda(date, filter);
         }
+
+        message += `**${I18n.formatI18n(`command.agenda.reply.${period}.title`, locale, { date: moment(date).format('DD/MM/YYYY') })}**\n\n`;
 
         let files: MessageAttachment[] = [];
 
         if (agenda.length === 0) {
-            message += "*Pas d'évènements*";
+            message += `*${I18n.getI18n("command.agenda.reply.noevents", locale)}*`;
         } else {
             files = [new MessageAttachment(await Agenda.renderAgenda(agenda), 'agenda.png')];
         }
@@ -116,12 +100,12 @@ export class AgendaCommand extends Command {
         const row = new MessageActionRow().addComponents(
             new MessageButton()
                 .setCustomId(`agenda_button,${moment(date).subtract(1, period).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
-                .setLabel(period === "week" ? "Semaine précédante" : "Jour précédant")
+                .setLabel(I18n.getI18n(`command.agenda.reply.${period}.previous`, locale))
                 .setStyle("PRIMARY")
         ).addComponents(
             new MessageButton()
                 .setCustomId(`agenda_button,${moment(date).add(1, period).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
-                .setLabel(period === "week" ? "Semaine suivante" : "Jour suivant")
+                .setLabel(I18n.getI18n(`command.agenda.reply.${period}.next`, locale))
                 .setStyle("PRIMARY")
         )
 
@@ -139,7 +123,7 @@ export class AgendaCommand extends Command {
             public: f.includes('P')
         };
 
-        await interaction.editReply(await this.messageData(date, period, filter));
+        await interaction.editReply(await this.messageData(date, period, filter, interaction.locale));
     }
 
     async execute(interaction: CommandInteraction) {
@@ -149,7 +133,8 @@ export class AgendaCommand extends Command {
             date = moment(date_string, 'DD/MM/YYYY').toDate();
             if (isNaN(date.getTime())) {
                 interaction.reply({
-                    content: "Date invalide !"
+                    content: I18n.getI18n("command.agenda.reply.invalid.date", interaction.locale),
+                    ephemeral: true
                 });
                 return;
             }
@@ -162,6 +147,6 @@ export class AgendaCommand extends Command {
         };
 
         await interaction.deferReply({ ephemeral: true });
-        await interaction.editReply(await this.messageData(date, interaction.options.getSubcommand() as "week" | "day", filter));
+        await interaction.editReply(await this.messageData(date, interaction.options.getSubcommand() as "week" | "day", filter, interaction.locale));
     }
 }

@@ -19,7 +19,7 @@
 
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../base/Command';
-import { SoftConfig } from '../config/SoftConfig';
+import { I18n } from '../utils/I18n';
 
 export class PingCommand extends Command {
     constructor() {
@@ -34,15 +34,7 @@ export class PingCommand extends Command {
         return true;
     }
 
-    getDescription() {
-        return "Vérifie si LegiBot est vivant.";
-    }
-
-    getConfigs() {
-        return ["command.ping.message"];
-    }
-
     async execute(interaction: CommandInteraction) {
-        interaction.reply({ content: SoftConfig.get("command.ping.message", "Pong!"), ephemeral: true });
+        interaction.reply({ content: I18n.getI18n('command.ping.pong', interaction.locale), ephemeral: true });
     }
 }

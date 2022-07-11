@@ -18,7 +18,7 @@
  */
 
 import { REST } from '@discordjs/rest';
-import { Routes } from 'discord-api-types/v9';
+import { RESTPostAPIApplicationCommandsJSONBody, Routes } from 'discord-api-types/v9';
 import { ButtonInteraction, Client, CommandInteraction, DMChannel, Interaction, Message, SelectMenuInteraction, VoiceState } from 'discord.js';
 import { Command } from './base/Command';
 import { DMCommand } from './base/DMCommand';
@@ -27,6 +27,7 @@ import { HardConfig } from './config/HardConfig';
 import { SoftConfig } from './config/SoftConfig';
 import { dmcommands } from './dmcommands';
 import { Audio } from './utils/Audio';
+import { I18n } from './utils/I18n';
 import { Log, Logger } from './utils/Logger';
 
 class BotManager {
@@ -83,13 +84,15 @@ class BotManager {
         await this.loadDMCommands();
         await this.loadCommands();
 
-        const commands = [];
+        const commands: RESTPostAPIApplicationCommandsJSONBody[] = [];
 
         for (const i in this.commands) {
             if (this.commands[i].isDevCommand() && HardConfig.getDev() || !this.commands[i].isDevCommand()) {
                 commands.push({
                     name: this.commands[i].getName(),
-                    description: this.commands[i].getDescription(),
+                    name_localizations: I18n.getI18nDict(this.commands[i].getI18nName()),
+                    description: I18n.getI18n(this.commands[i].getI18nDescription()),
+                    description_localizations: I18n.getI18nDict(this.commands[i].getI18nDescription()),
                     options: this.commands[i].getOptions()
                 });
             }
@@ -161,7 +164,7 @@ class BotManager {
             if (this.commands[interaction.commandName] !== undefined) {
                 if (this.commands[interaction.commandName].isReservedToGod()) {
                     if (!HardConfig.getDiscordGods().includes(interaction.user.id)) {
-                        interaction.reply({ content: "Vous n'êtes pas Dieux.", ephemeral: true });
+                        interaction.reply({ content: I18n.getI18n('bot.error.god', interaction.locale), ephemeral: true });
                         return;
                     }
                 }
@@ -188,9 +191,9 @@ class BotManager {
             this.logger.error("Error when handling " + type + " \"" + name + "\"", e as Error);
             try {
                 if (interaction.deferred)
-                    interaction.editReply({ content: "Une erreur est survenue lors du traitement de votre " + type + "." });
+                    interaction.editReply({ content: I18n.formatI18n('bot.error', interaction.locale, {type}) });
                 else
-                    interaction.reply({ content: "Une erreur est survenue lors du traitement de votre " + type + ".", ephemeral: true });
+                    interaction.reply({ content: I18n.formatI18n('bot.error', interaction.locale, {type}), ephemeral: true });
             } catch (e: any) {
                 this.logger.error("Error when handling error of " + type + " \"" + name + "\"", e as Error);
             }

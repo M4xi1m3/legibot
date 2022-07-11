@@ -20,6 +20,7 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../base/Command';
 import { HardConfig } from '../config/HardConfig';
+import { I18n } from '../utils/I18n';
 
 export class InviteCommand extends Command {
     constructor() {
@@ -30,17 +31,13 @@ export class InviteCommand extends Command {
         return "invite";
     }
 
-    getDescription() {
-        return "Inviter legibot sur un autre serveur";
-    }
-
     private link(): string {
         return `https://discord.com/api/oauth2/authorize?client_id=${HardConfig.getBotAppID()}&permissions=3145728&scope=bot%20applications.commands`;
     }
 
     async execute(interaction: CommandInteraction) {
         return interaction.reply({
-            content: `**Voici un lien d'invitation :**\n${this.link()}`,
+            content: `**${I18n.getI18n('command.invite.reply', interaction.locale)}**\n${this.link()}`,
             ephemeral: true
         });
     }
