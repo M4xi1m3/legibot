@@ -11,10 +11,14 @@ command.about.embed.license.text,LegiBot est distribué sous licence [GNU GPL v3
 command.agenda.name,agenda,agenda
 command.agenda.description,Consulter l'agenda de l'Assemblée Nationale.,Consult the agenda of the National Assembly.
 ,,
-command.agenda.option.day.name,jour,day
-command.agenda.option.day.description,Agenda du jour,Agenda of the day
-command.agenda.option.week.name,semaine,week
-command.agenda.option.week.description,Agenda de la semaine,Agenda of the week
+command.agenda.option.chamber.name,chambre,chamber
+command.agenda.option.chamber.description,Chambre à afficher,Chamber to show
+command.agenda.option.chamber.senate.name,sénat,senate
+command.agenda.option.chamber.assembly.name,assemblée nationale,national assembly
+command.agenda.option.period.name,période,period
+command.agenda.option.period.description,Période à afficher,Period to show
+command.agenda.option.period.day.name,jour,day
+command.agenda.option.period.week.name,semaine,week
 command.agenda.option.date.name,date,date
 command.agenda.option.date.description,Date (JJ/MM/AAAA),Date (DD/MM/YYYY)
 command.agenda.option.public.name,publique,public
