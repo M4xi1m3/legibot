@@ -43,22 +43,22 @@ export class AgendaCommand extends Command {
             ...I18n.argumentI18n(this, 'chamber'),
             required: true,
             choices: [{
-                ...I18n.choiceI18n(this, 'chamber', 'senate'),
-                value: 'senate'
-            }, {
                 ...I18n.choiceI18n(this, 'chamber', 'assembly'),
                 value: 'assembly'
+            }, {
+                ...I18n.choiceI18n(this, 'chamber', 'senate'),
+                value: 'senate'
             }]
         }, {
             type: ApplicationCommandOptionType.String,
             ...I18n.argumentI18n(this, 'period'),
             required: true,
             choices: [{
-                ...I18n.choiceI18n(this, 'period', 'week'),
-                value: 'week'
-            }, {
                 ...I18n.choiceI18n(this, 'period', 'day'),
                 value: 'day'
+            }, {
+                ...I18n.choiceI18n(this, 'period', 'week'),
+                value: 'week'
             }]
         }, {
             type: ApplicationCommandOptionType.String,
