@@ -27,8 +27,8 @@ type OrganizedAgenda = { [index: string]: AgendaEntry[] };
 type OrganizedSplitAgenda = { [index: string]: AgendaEntry[][] };
 type Dimension = { width: number, height: number };
 
-const AGENDA_CELL_HEIGHT = 48*2;
-const AGENDA_CELL_WIDTH = 128*4;
+const AGENDA_CELL_HEIGHT = 48 * 2;
+const AGENDA_CELL_WIDTH = 128 * 4;
 const AGENDA_CELL_BG = "#36393e";
 const AGENDA_CELL_FG = "#ffffff";
 const AGENDA_HOUR_WIDTH = 64;
@@ -50,7 +50,7 @@ class AgendaManager {
 
     private sortEvents(events: AgendaEntry[]): AgendaEntry[] {
         return events.sort((a: AgendaEntry, b: AgendaEntry) => (
-            (new Date(a.date)).getTime() - (new Date(b.date)).getTime()
+            (new Date(a.start)).getTime() - (new Date(b.start)).getTime()
         ));
     }
 
@@ -61,22 +61,25 @@ class AgendaManager {
         for (const k of Object.keys(agenda)) {
             if (agenda[k].length === 0)
                 continue;
-            start = Math.min(moment(agenda[k][0].date).hour(), start);
-            end = Math.max(moment(agenda[k][agenda[k].length - 1].date).hour(), end);
+
+            for (const event of agenda[k]) {
+                start = Math.min(moment(event.start).hour(), start);
+                end = Math.max(moment(event.end).hour(), end);
+            }
         }
 
         start -= 1;
         end += 2;
 
-        return { start, end };
+        return { start: Math.max(start, 0), end: Math.min(end, 24) };
     }
 
     private getDateRange(events: AgendaEntry[]): DateRange {
         const first = events[0];
         const last = events[events.length - 1];
         return {
-            start: moment(first.date).startOf('day').toDate(),
-            end: moment(last.date).startOf('day').toDate()
+            start: moment(first.start).startOf('day').toDate(),
+            end: moment(last.start).startOf('day').toDate()
         };
     }
 
@@ -100,15 +103,19 @@ class AgendaManager {
 
             events_loop:
             for (const event of agenda[day]) {
-                const start = moment(event.date).toDate().getTime();
-                const end = moment(event.date).add(2, 'hour').toDate().getTime();
+                const start = moment(event.start).toDate().getTime();
+                const end = moment(event.end).toDate().getTime();
 
                 timelines_loop:
                 // Iterate timelines
                 for (const timeline of tmp) {
                     for (const t_event of timeline) {
-                        const t_start = moment(t_event.date).toDate().getTime();
-                        const t_end = moment(t_event.date).add(2, 'hour').toDate().getTime();
+                        const t_start = moment(t_event.start).toDate().getTime();
+                        let t_end = moment(t_event.end).toDate().getTime();
+
+                        if (moment(t_event.end).diff(t_event.start, 'hour', true) < 1) {
+                            t_end = moment(t_event.start).add(1, 'hour').toDate().getTime();
+                        }
 
                         // If we overlap, we try another timeline
                         if (start < t_end && end > t_start) {
@@ -138,7 +145,7 @@ class AgendaManager {
         const out = this.prefill(range);
 
         for (const event of events) {
-            out[moment(event.date).format("DD/MM/YYYY")].push(event);
+            out[moment(event.start).format("DD/MM/YYYY")].push(event);
         }
 
         return out;
@@ -227,8 +234,9 @@ class AgendaManager {
                 const w = Math.round(AGENDA_CELL_WIDTH / splitted[date].length) - 1;
 
                 for (const event of splitted[date][timeline]) {
-                    const m = moment(event.date);
-                    const y = Math.round(AGENDA_DATE_HEIGHT + AGENDA_DATE_BORDER + (m.hour() + m.minute() / 60 - start) * (AGENDA_CELL_HEIGHT + AGENDA_CELL_BORDER));
+                    const st = moment(event.start);
+                    const y = Math.round(AGENDA_DATE_HEIGHT + AGENDA_DATE_BORDER + (st.hour() + st.minute() / 60 - start) * (AGENDA_CELL_HEIGHT + AGENDA_CELL_BORDER));
+                    const h = Math.max(1, -st.diff(event.end, 'hour', true)) * (AGENDA_CELL_HEIGHT + AGENDA_CELL_BORDER);
 
                     const s = split(ctx, event.title, ctx.font, w - 4, false);
 
@@ -237,13 +245,13 @@ class AgendaManager {
                         x,
                         y,
                         w,
-                        12 * 14 + 4
+                        h
                     );
 
                     ctx.fillStyle = event.color === "#57F287" ? "#000000" : AGENDA_CELL_FG;
                     ctx.textAlign = 'left';
 
-                    for (let i = 0; i < Math.min(12, s.length); i++) {
+                    for (let i = 0; i * 14 + 2 <= h && i < s.length; i++) {
                         ctx.fillText(
                             s[i],
                             x + 2,
