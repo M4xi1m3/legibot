@@ -65,6 +65,13 @@ class I18nManager {
             description_localizations: I18n.getI18nDict(`command.${command.getName()}.option.${argument}.description`),
         }
     }
+
+    choiceI18n(command: Command, argument: string, choice: string) {
+        return {
+            name: choice,
+            name_localizations: I18n.getI18nDict(`command.${command.getName()}.option.${argument}.${choice}.name`),
+        }
+    }
 }
 
 export const I18n = new I18nManager();
