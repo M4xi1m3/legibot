@@ -33,7 +33,7 @@ export type DiffusionData = {
     uid_referentiel: string,
     lieu: string,
     programme_ratp: number,
-    titre: string,
+    titre?: string,
     video_url?: string
 };
 
