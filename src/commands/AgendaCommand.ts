@@ -18,7 +18,7 @@
  */
 
 import { APIApplicationCommandOption, ApplicationCommandOptionType } from 'discord-api-types/v9';
-import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageAttachment, MessageButton } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageAttachment, MessageButton, MessageSelectMenu, SelectMenuInteraction } from 'discord.js';
 import moment from 'moment';
 import { AgendaEntry, AgendaFilter, ANAgendaAPI } from '../api/ANAgendaAPI';
 import { SAgendaAPI } from '../api/SAgendaAPI';
@@ -31,6 +31,7 @@ export class AgendaCommand extends Command {
     constructor() {
         super();
         Bot.registerButton("agenda_button", this.agnedaButton.bind(this));
+        Bot.registerSelect("agenda_chamber", this.selectChamber.bind(this));
     }
 
     getName() {
@@ -105,19 +106,46 @@ export class AgendaCommand extends Command {
             files = [new MessageAttachment(await Agenda.renderAgenda(agenda), 'agenda.png')];
         }
 
-        const row = new MessageActionRow().addComponents(
+        const rows = [new MessageActionRow().addComponents(
+            new MessageSelectMenu().setCustomId(`agenda_chamber,${moment(date).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
+                .setPlaceholder(I18n.getI18n('command.agenda.option.chamber.description', locale))
+                .addOptions([{
+                    label: I18n.getI18n('command.agenda.option.chamber.assembly.name', locale),
+                    value: 'assembly',
+                    default: chamber === 'assembly'
+                }, {
+                    label: I18n.getI18n('command.agenda.option.chamber.senate.name', locale),
+                    value: 'senate',
+                    default: chamber === 'senate'
+                }])
+        ), new MessageActionRow().addComponents(
             new MessageButton()
-                .setCustomId(`agenda_button,${moment(date).subtract(1, period).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
+                .setCustomId(`agenda_button,${moment(date).subtract(1, period).format("YYYY-MM-DD")},${chamber},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
                 .setLabel(I18n.getI18n(`command.agenda.reply.${period}.previous`, locale))
                 .setStyle("PRIMARY")
         ).addComponents(
             new MessageButton()
-                .setCustomId(`agenda_button,${moment(date).add(1, period).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
+                .setCustomId(`agenda_button,${moment(date).add(1, period).format("YYYY-MM-DD")},${chamber},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
                 .setLabel(I18n.getI18n(`command.agenda.reply.${period}.next`, locale))
                 .setStyle("PRIMARY")
-        )
+        )];
 
-        return { content: message, files, components: [row] };
+        return { content: message, files, components: rows };
+    }
+
+    async selectChamber(interaction: SelectMenuInteraction) {
+        await interaction.deferUpdate();
+        const [_, d, p, f] = interaction.customId.split(",");
+        const date = moment(d, "YYYY-MM-DD").toDate();
+        const period = p as "week" | "day";
+        const chamber = interaction.values[0] as "senate" | "assembly";
+        const filter: AgendaFilter = {
+            commission: f.includes('C'),
+            meetings: f.includes('M'),
+            public: f.includes('P')
+        };
+
+        await interaction.editReply(await this.messageData(date, chamber, period, filter, interaction.locale));
     }
 
     async agnedaButton(interaction: ButtonInteraction) {
