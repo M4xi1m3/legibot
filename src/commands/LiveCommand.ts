@@ -30,6 +30,7 @@ import { I18n } from '../utils/I18n';
 export class LiveCommand extends Command {
     constructor() {
         super();
+        Bot.registerSelect("live_chamber", this.selectChamber.bind(this));
         Bot.registerSelect("live_seance", this.selectSeance.bind(this));
         Bot.registerButton("live_listen", this.listenSeance.bind(this));
         Bot.registerButton("live_reload", this.reloadSeance.bind(this));
@@ -54,13 +55,14 @@ export class LiveCommand extends Command {
         }];
     }
 
-    private getSelectable(streams: StreamEntry[]): MessageSelectOptionData[] | undefined {
+    private getSelectable(streams: StreamEntry[], selected: string | null): MessageSelectOptionData[] | undefined {
         const out = [];
 
         for (const s of streams) {
             out.push({
                 label: s.selector,
-                value: s.id
+                value: s.id,
+                default: s.id === selected
             });
         }
 
@@ -81,7 +83,7 @@ export class LiveCommand extends Command {
             return { content: I18n.getI18n('command.live.error', locale) };
         }
 
-        const selectable = this.getSelectable(streams);
+        const selectable = this.getSelectable(streams, selected);
 
         if (selectable === undefined || streams.length === 0) {
             const embed = new MessageEmbed();
@@ -89,6 +91,18 @@ export class LiveCommand extends Command {
             embed.setDescription(I18n.getI18n('command.live.embed.nolive', locale));
             return {
                 embeds: [embed], components: [new MessageActionRow().addComponents(
+                    new MessageSelectMenu().setCustomId('live_chamber')
+                        .setPlaceholder(I18n.getI18n('command.live.option.chamber.description', locale))
+                        .addOptions([{
+                            label: I18n.getI18n('command.live.option.chamber.assembly.name', locale),
+                            value: 'assembly',
+                            default: chamber === 'assembly'
+                        }, {
+                            label: I18n.getI18n('command.live.option.chamber.senate.name', locale),
+                            value: 'senate',
+                            default: chamber === 'senate'
+                        }])
+                ), new MessageActionRow().addComponents(
                     new MessageSelectMenu().setCustomId(`live_seance,${chamber}`)
                         .setPlaceholder(I18n.getI18n('command.live.embed.session', locale))
                         .addOptions(selectable ?? [{ label: "ERROR", value: "ERROR" }])
@@ -130,6 +144,18 @@ export class LiveCommand extends Command {
 
             return {
                 embeds: [embed], components: [new MessageActionRow().addComponents(
+                    new MessageSelectMenu().setCustomId('live_chamber')
+                        .setPlaceholder(I18n.getI18n('command.live.option.chamber.description', locale))
+                        .addOptions([{
+                            label: I18n.getI18n('command.live.option.chamber.assembly.name', locale),
+                            value: 'assembly',
+                            default: chamber === 'assembly'
+                        }, {
+                            label: I18n.getI18n('command.live.option.chamber.senate.name', locale),
+                            value: 'senate',
+                            default: chamber === 'senate'
+                        }])
+                ), new MessageActionRow().addComponents(
                     new MessageSelectMenu().setCustomId(`live_seance,${chamber}`)
                         .setPlaceholder(I18n.getI18n('command.live.embed.session', locale))
                         .addOptions(selectable ?? [{ label: "ERROR", value: "ERROR" }])
@@ -199,6 +225,12 @@ export class LiveCommand extends Command {
         const select = interaction.values[0];
         const [_, chamber] = interaction.customId.split(",");
         interaction.editReply(await this.getMessageData(select, chamber as 'senate' | 'assembly', interaction.locale));
+    }
+
+    async selectChamber(interaction: SelectMenuInteraction) {
+        await interaction.deferUpdate();
+        const chamber = interaction.values[0];
+        interaction.editReply(await this.getMessageData(null, chamber as 'senate' | 'assembly', interaction.locale));
     }
 
     async reloadSeance(interaction: ButtonInteraction) {
