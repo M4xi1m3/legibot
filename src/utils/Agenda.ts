@@ -42,9 +42,6 @@ const AGENDA_BORDER_FG = "#202225";
 const AGENDA_HOUR_BORDER = 2;
 const AGENDA_DATE_BORDER = 2;
 const AGENDA_TEXT_HEIGHT = 12;
-const AGENDA_EVENT_BG = "#5865F2";
-const HOUR_NUMBER = 24;
-const HOUR_OFFSET = 0;
 
 class AgendaManager {
 
