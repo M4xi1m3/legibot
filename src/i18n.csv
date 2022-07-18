@@ -43,11 +43,16 @@ command.invite.reply,Voici un lien d'invitation :,Here is your invite link:
 ,,
 command.live.name,direct,live
 command.live.description,Écouter l’assemblée nationale en direct,Listen to the national assembly’s livestream
+command.live.option.chamber.name,chambre,chamber
+command.live.option.chamber.description,Chambre à écouter,Chamber to listen to
+command.live.option.chamber.senate.name,sénat,senate
+command.live.option.chamber.assembly.name,assemblée nationale,national assembly
 ,,
 command.live.error,Une erreur est survenue !,An error occured!
 command.live.error.voice,Vous devez être dans un canal vocal !,You must be in a voice channel!
 command.live.error.notlive,Ce flux n'est plus en direct.,This stream isn’t live anymore.
-command.live.embed.title,Direct Assemblée Nationale,National Assembly’s Live
+command.live.embed.assembly.title,Direct Assemblée Nationale,National Assembly’s Live
+command.live.embed.senate.title,Direct Sénat,Senate’s Live
 command.live.embed.select,Veuillez sélectionner une séance en cours.,Please select a live session.
 command.live.embed.nolive,Pas de direct en cours.,No live at the moment.
 command.live.embed.session,Séance,Session

@@ -17,9 +17,10 @@
  * along with LegiBot.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { APIApplicationCommandOption, ApplicationCommandOptionType } from 'discord-api-types/v9';
 import { ButtonInteraction, CommandInteraction, GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessagePayload, MessageSelectMenu, MessageSelectOptionData, SelectMenuInteraction, WebhookEditMessageOptions } from 'discord.js';
-import { decode } from 'html-entities';
-import { ANLiveAPI, DiffusionData, EditoData, LiveData } from '../api/ANLiveAPI';
+import { ANLiveAPI, StreamEntry } from '../api/ANLiveAPI';
+import { SLiveAPI } from '../api/SLiveAPI';
 import { Command } from '../base/Command';
 import { Bot } from '../Bot';
 import { Audio } from '../utils/Audio';
@@ -38,21 +39,29 @@ export class LiveCommand extends Command {
         return "live";
     }
 
-    private getSelectable(live: LiveData, edito: EditoData): MessageSelectOptionData[] | undefined {
-        if (edito.diffusion === undefined)
-            return undefined;
+    getOptions(): APIApplicationCommandOption[] {
+        return [{
+            type: ApplicationCommandOptionType.String,
+            ...I18n.argumentI18n(this, 'chamber'),
+            required: true,
+            choices: [{
+                ...I18n.choiceI18n(this, 'chamber', 'assembly'),
+                value: 'assembly'
+            }, {
+                ...I18n.choiceI18n(this, 'chamber', 'senate'),
+                value: 'senate'
+            }]
+        }];
+    }
 
+    private getSelectable(streams: StreamEntry[]): MessageSelectOptionData[] | undefined {
         const out = [];
 
-        for (const l of live) {
-            const e: DiffusionData | undefined = edito.diffusion.find(v => v.flux + "" === l.flux);
-            if (e?.flux + "" === "")
-                continue;
-            if (e !== undefined) {
-                out.push({
-                    label: e.libelle_court, value: l.flux
-                });
-            }
+        for (const s of streams) {
+            out.push({
+                label: s.selector,
+                value: s.id
+            });
         }
 
         if (out.length === 0)
@@ -61,29 +70,31 @@ export class LiveCommand extends Command {
         return out;
     }
 
-    private async getMessageData(selected: string | null = null, locale: string): Promise<MessagePayload | WebhookEditMessageOptions> {
-        let live: LiveData, edito: EditoData;
+    private async getMessageData(selected: string | null = null, chamber: 'senate' | 'assembly', locale: string): Promise<MessagePayload | WebhookEditMessageOptions> {
+        let streams: StreamEntry[];
         try {
-            live = await ANLiveAPI.live();
-            edito = await ANLiveAPI.edito();
+            if (chamber === 'assembly')
+                streams = await ANLiveAPI.streams();
+            else
+                streams = await SLiveAPI.streams();
         } catch (e: any) {
             return { content: I18n.getI18n('command.live.error', locale) };
         }
 
-        const selectable = this.getSelectable(live, edito);
+        const selectable = this.getSelectable(streams);
 
-        if (selectable === undefined || live.length === 0) {
+        if (selectable === undefined || streams.length === 0) {
             const embed = new MessageEmbed();
-            embed.setTitle(I18n.getI18n('command.live.embed.title', locale));
+            embed.setTitle(I18n.getI18n(`command.live.embed.${chamber}.title`, locale));
             embed.setDescription(I18n.getI18n('command.live.embed.nolive', locale));
             return {
                 embeds: [embed], components: [new MessageActionRow().addComponents(
-                    new MessageSelectMenu().setCustomId("live_seance")
+                    new MessageSelectMenu().setCustomId(`live_seance,${chamber}`)
                         .setPlaceholder(I18n.getI18n('command.live.embed.session', locale))
                         .addOptions(selectable ?? [{ label: "ERROR", value: "ERROR" }])
                         .setDisabled(true)
                 ), new MessageActionRow().addComponents(
-                    new MessageButton().setCustomId("live_listen,null")
+                    new MessageButton().setCustomId(`live_listen,${chamber},null`)
                         .setLabel(I18n.getI18n('command.live.embed.listen', locale))
                         .setStyle("PRIMARY")
                         .setDisabled(true),
@@ -93,7 +104,7 @@ export class LiveCommand extends Command {
                         .setStyle("LINK")
                         .setDisabled(true)
                 ).addComponents(
-                    new MessageButton().setCustomId("live_reload,null")
+                    new MessageButton().setCustomId(`live_reload,${chamber},null`)
                         .setLabel(I18n.getI18n('command.live.embed.refresh', locale))
                         .setStyle("SECONDARY")
                         .setEmoji(Emoji.refresh)
@@ -103,50 +114,27 @@ export class LiveCommand extends Command {
             const embed = new MessageEmbed();
 
             if (selected === null || selected === "null") {
-                embed.setTitle(I18n.getI18n('command.live.embed.title', locale));
+                embed.setTitle(I18n.getI18n(`command.live.embed.${chamber}.title`, locale));
                 embed.setDescription(I18n.getI18n('command.live.embed.select', locale));
             } else {
-                const diffusions = edito.diffusion.filter(v => v.flux + "" === selected);
-                if (diffusions.length === 0) {
+                const diffusions = streams.find(v => v.id + "" === selected);
+                if (diffusions === undefined) {
                     embed.setTitle("Live Assemblée Nationale");
                     embed.setDescription(I18n.getI18n('command.live.embed.select', locale));
                 } else {
-                    let diffusion: DiffusionData | undefined = undefined;
-                    if (diffusions.length === 1) {
-                        diffusion = diffusions[0];
-                    } else {
-                        diffusions.sort((a, b) => a.heure - b.heure);
-
-                        const currentDate = new Date();
-                        currentDate.setMinutes(currentDate.getMinutes());
-                        let hour = currentDate.getHours() * 100 + currentDate.getMinutes();
-                        if (hour < 600)
-                            hour += 2400;
-
-                        for (let i = 0; i < diffusions.length - 1; i++) {
-                            if (hour < diffusions[i + 1].heure) {
-                                diffusion = diffusions[i];
-                                break;
-                            }
-                        }
-                        if (diffusion === undefined) {
-                            diffusion = diffusions[diffusions.length - 1];
-                        }
-                    }
-
-                    embed.setTitle(diffusion.libelle === "" ? diffusion.libelle_court : diffusion.libelle);
-                    embed.setDescription(decode(diffusion.sujet).replace("<br>", "\n").replace("<br/>", "\n"));
-                    embed.setThumbnail(`https://videos.assemblee-nationale.fr/live/images/${diffusion.id_organe}.jpg`);
+                    embed.setTitle(diffusions.title);
+                    embed.setDescription(diffusions.description);
+                    embed.setThumbnail(diffusions.thumbnail_url);
                 }
             }
 
             return {
                 embeds: [embed], components: [new MessageActionRow().addComponents(
-                    new MessageSelectMenu().setCustomId("live_seance")
+                    new MessageSelectMenu().setCustomId(`live_seance,${chamber}`)
                         .setPlaceholder(I18n.getI18n('command.live.embed.session', locale))
                         .addOptions(selectable ?? [{ label: "ERROR", value: "ERROR" }])
                 ), new MessageActionRow().addComponents(
-                    new MessageButton().setCustomId("live_listen," + selected)
+                    new MessageButton().setCustomId(`live_listen,${chamber},${selected}`)
                         .setLabel(I18n.getI18n('command.live.embed.listen', locale))
                         .setStyle("PRIMARY")
                         .setDisabled(selected === null),
@@ -156,7 +144,7 @@ export class LiveCommand extends Command {
                         .setStyle("LINK")
                         .setDisabled(selected === null),
                 ).addComponents(
-                    new MessageButton().setCustomId("live_reload," + selected)
+                    new MessageButton().setCustomId(`live_reload,${chamber},${selected}`)
                         .setLabel(I18n.getI18n('command.live.embed.refresh', locale))
                         .setStyle("SECONDARY")
                         .setEmoji(Emoji.refresh)
@@ -176,11 +164,19 @@ export class LiveCommand extends Command {
             return;
         }
 
-        const flux = interaction.customId.split(",")[1];
+        const [_, chamber, id] = interaction.customId.split(",");
+        let stream: StreamEntry | undefined
 
         try {
-            const live = await ANLiveAPI.live();
-            if (live.find((v) => v.flux === flux) === undefined) {
+            let streams: StreamEntry[];
+
+            if (chamber === 'assembly')
+                streams = await ANLiveAPI.streams();
+            else
+                streams = await SLiveAPI.streams();
+
+            stream = streams.find((v) => v.id === id);
+            if (stream === undefined) {
                 interaction.reply({ content: I18n.getI18n('command.live.error.notlive', interaction.locale), ephemeral: true });
                 return;
             }
@@ -189,7 +185,7 @@ export class LiveCommand extends Command {
             return;
         }
 
-        Audio.playStream(`https://videos.assemblee-nationale.fr/live/live${flux}/playlist${flux}.m3u8`, {
+        Audio.playStream(stream.listen_url, {
             channelId: member.voice.channelId,
             guildId: member.guild.id,
             adapterCreator: member.guild.voiceAdapterCreator,
@@ -201,17 +197,18 @@ export class LiveCommand extends Command {
     async selectSeance(interaction: SelectMenuInteraction) {
         await interaction.deferUpdate();
         const select = interaction.values[0];
-        interaction.editReply(await this.getMessageData(select, interaction.locale));
+        const [_, chamber] = interaction.customId.split(",");
+        interaction.editReply(await this.getMessageData(select, chamber as 'senate' | 'assembly', interaction.locale));
     }
 
     async reloadSeance(interaction: ButtonInteraction) {
         await interaction.deferUpdate();
-        const flux = interaction.customId.split(",")[1];
-        interaction.editReply(await this.getMessageData(flux === "null" ? null : flux, interaction.locale));
+        const [_, chamber, flux] = interaction.customId.split(",");
+        interaction.editReply(await this.getMessageData(flux === "null" ? null : flux, chamber as 'senate' | 'assembly', interaction.locale));
     }
 
     async execute(interaction: CommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
-        await interaction.editReply(await this.getMessageData(null, interaction.locale));
+        await interaction.editReply(await this.getMessageData(null, interaction.options.getString("chamber") as 'senate' | 'assembly', interaction.locale));
     }
 }
