@@ -51,6 +51,7 @@ command.live.option.chamber.assembly.name,Assemblée Nationale,National Assembly
 command.live.error,Une erreur est survenue !,An error occured!
 command.live.error.voice,Vous devez être dans un canal vocal !,You must be in a voice channel!
 command.live.error.notlive,Ce flux n'est plus en direct.,This stream isn’t live anymore.
+command.live.error.nolisten,Ce flux n'est pas écoutable.,This stream isn’t listenable.
 command.live.embed.assembly.title,Direct Assemblée Nationale,National Assembly’s Live
 command.live.embed.senate.title,Direct Sénat,Senate’s Live
 command.live.embed.select,Veuillez sélectionner une séance en cours.,Please select a live session.

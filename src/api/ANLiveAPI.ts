@@ -41,9 +41,9 @@ export type DiffusionData = {
 export type StreamEntry = {
     title: string,
     description: string,
-    thumbnail_url: string,
-    listen_url: string,
-    watch_url: string,
+    thumbnail_url?: string,
+    listen_url?: string,
+    watch_url?: string,
     selector: string,
     id: string
 };

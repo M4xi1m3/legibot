@@ -74,6 +74,8 @@ export class LiveCommand extends Command {
 
     private async getMessageData(selected: string | null = null, chamber: 'senate' | 'assembly', locale: string): Promise<MessagePayload | WebhookEditMessageOptions> {
         let streams: StreamEntry[];
+        let no_watch = false, no_listen = false;
+        let watch_url = "";
         try {
             if (chamber === 'assembly')
                 streams = await ANLiveAPI.streams();
@@ -135,10 +137,16 @@ export class LiveCommand extends Command {
                 if (diffusions === undefined) {
                     embed.setTitle("Live Assemblée Nationale");
                     embed.setDescription(I18n.getI18n('command.live.embed.select', locale));
+                    no_watch = true;
+                    no_listen = true;
                 } else {
                     embed.setTitle(diffusions.title);
                     embed.setDescription(diffusions.description);
-                    embed.setThumbnail(diffusions.thumbnail_url);
+                    if (diffusions.thumbnail_url !== undefined)
+                        embed.setThumbnail(diffusions.thumbnail_url);
+                    no_watch = diffusions.watch_url === undefined;
+                    no_listen = diffusions.listen_url === undefined;
+                    watch_url = diffusions.watch_url ?? "";
                 }
             }
 
@@ -163,12 +171,12 @@ export class LiveCommand extends Command {
                     new MessageButton().setCustomId(`live_listen,${chamber},${selected}`)
                         .setLabel(I18n.getI18n('command.live.embed.listen', locale))
                         .setStyle("PRIMARY")
-                        .setDisabled(selected === null),
+                        .setDisabled(selected === null || no_listen),
                     new MessageButton()
-                        .setURL(`https://videos.assemblee-nationale.fr/direct.${selected}`)
+                        .setURL(watch_url)
                         .setLabel(I18n.getI18n('command.live.embed.watch', locale))
                         .setStyle("LINK")
-                        .setDisabled(selected === null),
+                        .setDisabled(selected === null || no_watch),
                 ).addComponents(
                     new MessageButton().setCustomId(`live_reload,${chamber},${selected}`)
                         .setLabel(I18n.getI18n('command.live.embed.refresh', locale))
@@ -208,6 +216,11 @@ export class LiveCommand extends Command {
             }
         } catch (e: any) {
             interaction.reply({ content: I18n.getI18n('command.live.error', interaction.locale), ephemeral: true });
+            return;
+        }
+
+        if (stream.listen_url === undefined) {
+            interaction.reply({ content: I18n.getI18n('command.live.error.nolisten', interaction.locale), ephemeral: true });
             return;
         }
 
