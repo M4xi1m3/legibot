@@ -37,7 +37,7 @@ export class ConfigCommand extends Command {
     }
 
     async ephemeralButton(interaction: ButtonInteraction) {
-        if (!this.validateCall(interaction)) return;
+        if (!await this.validateCall(interaction)) return;
 
         ServerConfig.set(interaction.guildId ?? '', {
             ephemeral: interaction.customId.split(',')[1] === "true"
@@ -48,7 +48,7 @@ export class ConfigCommand extends Command {
     }
 
     async languageSelect(interaction: SelectMenuInteraction) {
-        if (!this.validateCall(interaction)) return;
+        if (!await this.validateCall(interaction)) return;
 
         ServerConfig.set(interaction.guildId ?? '', {
             locale: interaction.values[0] as LocaleString
@@ -65,7 +65,7 @@ export class ConfigCommand extends Command {
         }
 
         if (!interaction.memberPermissions?.any('MANAGE_GUILD', true)
-            || !HardConfig.getDiscordGods().includes(interaction.user.id)) {
+            && !HardConfig.getDiscordGods().includes(interaction.user.id)) {
             await interaction.reply({ content: I18n.getI18n('command.config.error.permission', I18n.getLang(interaction)), ephemeral: true });
             return false;
         }
@@ -98,7 +98,7 @@ export class ConfigCommand extends Command {
     }
 
     async execute(interaction: CommandInteraction) {
-        if (!this.validateCall(interaction)) return;
+        if (!await this.validateCall(interaction)) return;
 
         await interaction.deferReply({ ephemeral: true });
         await interaction.editReply(await this.messageData(interaction));
