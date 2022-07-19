@@ -18,10 +18,11 @@
  */
 
 import { XMLParser } from 'fast-xml-parser';
+import { decode } from 'html-entities';
 import { Api } from '../base/Api';
 import { Cache } from '../utils/Cache';
 
-export type LiveData = { flux: string, media: string }[];
+export type LiveData = { flux: string, media: string };
 
 export type DiffusionData = {
     id_organe: number,
@@ -33,8 +34,18 @@ export type DiffusionData = {
     uid_referentiel: string,
     lieu: string,
     programme_ratp: number,
-    titre: string,
+    titre?: string,
     video_url?: string
+};
+
+export type StreamEntry = {
+    title: string,
+    description: string,
+    thumbnail_url?: string,
+    listen_url?: string,
+    watch_url?: string,
+    selector: string,
+    id: string
 };
 
 export type EditoData = { titre: string, introduction: string, diffusion: DiffusionData[] };
@@ -57,26 +68,24 @@ class ANLiveAPIManager extends Api {
         return await this.request("GET", `https://videos.assemblee-nationale.fr/live/live.txt?rnd=${Date.now()}`);
     }
 
-    async live(): Promise<LiveData> {
-        return await Cache.cache('an.live', 15, async () => {
-            const data = [];
-            const res = await this.load_live();
+    async live(): Promise<LiveData[]> {
+        const data = [];
+        const res = await this.load_live();
 
-            if (!res.good) {
-                return Promise.reject();
-            } else {
-                for (const line of res.data.split("\n")) {
-                    const [flux, media] = line.split(" ");
-                    if (flux === '')
-                        continue;
-                    data.push({
-                        flux,
-                        media
-                    });
-                }
-                return data;
+        if (!res.good) {
+            return Promise.reject();
+        } else {
+            for (const line of res.data.split("\n")) {
+                const [flux, media] = line.split(" ");
+                if (flux === '')
+                    continue;
+                data.push({
+                    flux,
+                    media
+                });
             }
-        });
+            return data;
+        }
     }
 
     async load_edito() {
@@ -97,6 +106,68 @@ class ANLiveAPIManager extends Api {
 
                 return parsed.editorial;
             }
+        });
+    }
+
+    async streams(): Promise<StreamEntry[]> {
+        return await Cache.cache('an.streams', 15, async () => {
+            const live = await this.live();
+            const edito = await this.edito();
+            const out: StreamEntry[] = [];
+
+            for (const l of live) {
+                const d = edito.diffusion.filter((v: DiffusionData) => v.flux + '' === l.flux);
+
+                if (d.length === 0) {
+                    out.push({
+                        title: `Flux ${l.flux}`,
+                        description: "Pas de description",
+                        thumbnail_url: `https://videos.assemblee-nationale.fr/live/images/live${l.flux}.jpg`,
+                        listen_url: `https://videos.assemblee-nationale.fr/live/live${l.flux}/playlist${l.flux}.m3u8`,
+                        selector: l.flux,
+                        watch_url: `https://videos.assemblee-nationale.fr/direct.${l.flux}`,
+                        id: l.flux
+                    })
+                }
+
+                let diffusion: DiffusionData | undefined;
+
+                if (d.length === 1) {
+                    diffusion = d[0];
+                } else {
+                    d.sort((a, b) => a.heure - b.heure);
+
+                    const currentDate = new Date();
+                    let hour = currentDate.getHours() * 100 + currentDate.getMinutes();
+                    if (hour < 600)
+                        hour += 2400;
+
+                    for (let i = 0; i < d.length - 1; i++) {
+                        if (hour < d[i + 1].heure) {
+                            diffusion = d[i];
+                            break;
+                        }
+                    }
+                }
+
+                if (diffusion === undefined) {
+                    diffusion = d[d.length - 1];
+                }
+
+                out.push({
+                    title: diffusion.titre ?? (diffusion.libelle === "" ? diffusion.libelle_court : diffusion.libelle),
+                    description: decode(diffusion.sujet).replace("<br>", "\n").replace("<br/>", "\n"),
+                    thumbnail_url: `https://videos.assemblee-nationale.fr/live/images/${diffusion.id_organe}.jpg`,
+                    listen_url: `https://videos.assemblee-nationale.fr/live/live${l.flux}/playlist${l.flux}.m3u8`,
+                    selector: diffusion.libelle_court,
+                    watch_url: `https://videos.assemblee-nationale.fr/direct.${l.flux}`,
+                    id: l.flux
+                })
+            }
+
+            edito.diffusion.filter((v: DiffusionData) => v.flux + '' in live.map((l: LiveData) => l.flux))
+
+            return out;
         });
     }
 }

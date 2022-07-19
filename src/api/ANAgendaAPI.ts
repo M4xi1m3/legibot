@@ -28,7 +28,8 @@ export type AgendaPeriode = 'journalier' | 'hebdomadaire';
 export type AgendaEntry = {
     title: string,
     description?: string,
-    date: string,
+    start: string,
+    end: string,
     color: string
 };
 
@@ -49,6 +50,7 @@ class ANAgendaAPIManager extends Api {
     }
 
     async load_agenda(date: Date, periode: AgendaPeriode) {
+        this.logger.info(`GET https://www2.assemblee-nationale.fr/agendas/ics/${this.dateFormat(date)}/${periode}`);
         return await ical.async.fromURL(`https://www2.assemblee-nationale.fr/agendas/ics/${this.dateFormat(date)}/${periode}`);
     }
 
@@ -59,7 +61,7 @@ class ANAgendaAPIManager extends Api {
             const agenda = await this.load_agenda(date, 'hebdomadaire');
             const out: AgendaEntry[] = [];
 
-            for(const key of Object.keys(agenda)) {
+            for (const key of Object.keys(agenda)) {
                 const event = agenda[key];
                 if (event.type !== 'VEVENT')
                     continue;
@@ -67,7 +69,8 @@ class ANAgendaAPIManager extends Api {
                 out.push({
                     title: event.summary.replace("Réunion de la c", "C"),
                     description: event.description === '' ? undefined : decode(event.description).replace("<br>", "\n").replace("<br/>", "\n"),
-                    date: event.start.toISOString(),
+                    start: event.start.toISOString(),
+                    end: event.end.toISOString(),
                     color: (() => {
                         if (event.summary.startsWith('Réunion - '))
                             return "#ED4245";
@@ -99,8 +102,8 @@ class ANAgendaAPIManager extends Api {
 
         const d = moment(date);
 
-        for(const event of week) {
-            if (d.isSame(event.date, 'day')) {
+        for (const event of week) {
+            if (d.isSame(event.start, 'day')) {
                 out.push(event);
             }
         }

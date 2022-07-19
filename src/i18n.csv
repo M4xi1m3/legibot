@@ -11,10 +11,14 @@ command.about.embed.license.text,LegiBot est distribué sous licence [GNU GPL v3
 command.agenda.name,agenda,agenda
 command.agenda.description,Consulter l'agenda de l'Assemblée Nationale.,Consult the agenda of the National Assembly.
 ,,
-command.agenda.option.day.name,jour,day
-command.agenda.option.day.description,Agenda du jour,Agenda of the day
-command.agenda.option.week.name,semaine,week
-command.agenda.option.week.description,Agenda de la semaine,Agenda of the week
+command.agenda.option.chamber.name,chambre,chamber
+command.agenda.option.chamber.description,Chambre à afficher,Chamber to show
+command.agenda.option.chamber.senate.name,Sénat,Senate
+command.agenda.option.chamber.assembly.name,Assemblée Nationale,National Assembly
+command.agenda.option.period.name,période,period
+command.agenda.option.period.description,Période à afficher,Period to show
+command.agenda.option.period.day.name,jour,day
+command.agenda.option.period.week.name,semaine,week
 command.agenda.option.date.name,date,date
 command.agenda.option.date.description,Date (JJ/MM/AAAA),Date (DD/MM/YYYY)
 command.agenda.option.public.name,publique,public
@@ -39,11 +43,17 @@ command.invite.reply,Voici un lien d'invitation :,Here is your invite link:
 ,,
 command.live.name,direct,live
 command.live.description,Écouter l’assemblée nationale en direct,Listen to the national assembly’s livestream
+command.live.option.chamber.name,chambre,chamber
+command.live.option.chamber.description,Chambre à écouter,Chamber to listen to
+command.live.option.chamber.senate.name,Sénat,Senate
+command.live.option.chamber.assembly.name,Assemblée Nationale,National Assembly
 ,,
 command.live.error,Une erreur est survenue !,An error occured!
 command.live.error.voice,Vous devez être dans un canal vocal !,You must be in a voice channel!
 command.live.error.notlive,Ce flux n'est plus en direct.,This stream isn’t live anymore.
-command.live.embed.title,Direct Assemblée Nationale,National Assembly’s Live
+command.live.error.nolisten,Ce flux n'est pas écoutable.,This stream isn’t listenable.
+command.live.embed.assembly.title,Direct Assemblée Nationale,National Assembly’s Live
+command.live.embed.senate.title,Direct Sénat,Senate’s Live
 command.live.embed.select,Veuillez sélectionner une séance en cours.,Please select a live session.
 command.live.embed.nolive,Pas de direct en cours.,No live at the moment.
 command.live.embed.session,Séance,Session

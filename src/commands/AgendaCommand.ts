@@ -18,9 +18,10 @@
  */
 
 import { APIApplicationCommandOption, ApplicationCommandOptionType } from 'discord-api-types/v9';
-import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageAttachment, MessageButton } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageAttachment, MessageButton, MessageSelectMenu, SelectMenuInteraction } from 'discord.js';
 import moment from 'moment';
 import { AgendaEntry, AgendaFilter, ANAgendaAPI } from '../api/ANAgendaAPI';
+import { SAgendaAPI } from '../api/SAgendaAPI';
 import { Command } from '../base/Command';
 import { Bot } from '../Bot';
 import { Agenda } from '../utils/Agenda';
@@ -30,6 +31,7 @@ export class AgendaCommand extends Command {
     constructor() {
         super();
         Bot.registerButton("agenda_button", this.agnedaButton.bind(this));
+        Bot.registerSelect("agenda_chamber", this.selectChamber.bind(this));
     }
 
     getName() {
@@ -38,53 +40,60 @@ export class AgendaCommand extends Command {
 
     getOptions(): APIApplicationCommandOption[] {
         return [{
-            type: ApplicationCommandOptionType.Subcommand,
-            ...I18n.argumentI18n(this, 'day'),
-            options: [{
-                type: ApplicationCommandOptionType.String,
-                ...I18n.argumentI18n(this, 'date'),
+            type: ApplicationCommandOptionType.String,
+            ...I18n.argumentI18n(this, 'chamber'),
+            required: true,
+            choices: [{
+                ...I18n.choiceI18n(this, 'chamber', 'assembly'),
+                value: 'assembly'
             }, {
-                type: ApplicationCommandOptionType.Boolean,
-                ...I18n.argumentI18n(this, 'public'),
-                required: false
-            }, {
-                type: ApplicationCommandOptionType.Boolean,
-                ...I18n.argumentI18n(this, 'commission'),
-                required: false
-            }, {
-                type: ApplicationCommandOptionType.Boolean,
-                ...I18n.argumentI18n(this, 'meetings'),
-                required: false
+                ...I18n.choiceI18n(this, 'chamber', 'senate'),
+                value: 'senate'
             }]
         }, {
-            type: ApplicationCommandOptionType.Subcommand,
-            ...I18n.argumentI18n(this, 'week'),
-            options: [{
-                type: ApplicationCommandOptionType.String,
-                ...I18n.argumentI18n(this, 'date'),
+            type: ApplicationCommandOptionType.String,
+            ...I18n.argumentI18n(this, 'period'),
+            required: true,
+            choices: [{
+                ...I18n.choiceI18n(this, 'period', 'day'),
+                value: 'day'
             }, {
-                type: ApplicationCommandOptionType.Boolean,
-                ...I18n.argumentI18n(this, 'public'),
-                required: false
-            }, {
-                type: ApplicationCommandOptionType.Boolean,
-                ...I18n.argumentI18n(this, 'commission'),
-                required: false
-            }, {
-                type: ApplicationCommandOptionType.Boolean,
-                ...I18n.argumentI18n(this, 'meetings'),
-                required: false
+                ...I18n.choiceI18n(this, 'period', 'week'),
+                value: 'week'
             }]
+        }, {
+            type: ApplicationCommandOptionType.String,
+            ...I18n.argumentI18n(this, 'date'),
+        }, {
+            type: ApplicationCommandOptionType.Boolean,
+            ...I18n.argumentI18n(this, 'public'),
+            required: false
+        }, {
+            type: ApplicationCommandOptionType.Boolean,
+            ...I18n.argumentI18n(this, 'commission'),
+            required: false
+        }, {
+            type: ApplicationCommandOptionType.Boolean,
+            ...I18n.argumentI18n(this, 'meetings'),
+            required: false
         }]
     }
 
-    private async messageData(date: Date, period: "week" | "day", filter: AgendaFilter, locale: string) {
+    private async messageData(date: Date, chamber: 'senate' | 'assembly', period: "week" | "day", filter: AgendaFilter, locale: string) {
         let message = '';
         let agenda: AgendaEntry[] = [];
-        if (period === 'day') {
-            agenda = await ANAgendaAPI.day_agenda(date, filter);
+        if (chamber === 'senate') {
+            if (period === 'day') {
+                agenda = await SAgendaAPI.day_agenda(date, filter);
+            } else {
+                agenda = await SAgendaAPI.week_agenda(date, filter);
+            }
         } else {
-            agenda = await ANAgendaAPI.week_agenda(date, filter);
+            if (period === 'day') {
+                agenda = await ANAgendaAPI.day_agenda(date, filter);
+            } else {
+                agenda = await ANAgendaAPI.week_agenda(date, filter);
+            }
         }
 
         message += `**${I18n.formatI18n(`command.agenda.reply.${period}.title`, locale, { date: moment(date).format('DD/MM/YYYY') })}**\n\n`;
@@ -97,33 +106,61 @@ export class AgendaCommand extends Command {
             files = [new MessageAttachment(await Agenda.renderAgenda(agenda), 'agenda.png')];
         }
 
-        const row = new MessageActionRow().addComponents(
+        const rows = [new MessageActionRow().addComponents(
+            new MessageSelectMenu().setCustomId(`agenda_chamber,${moment(date).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
+                .setPlaceholder(I18n.getI18n('command.agenda.option.chamber.description', locale))
+                .addOptions([{
+                    label: I18n.getI18n('command.agenda.option.chamber.assembly.name', locale),
+                    value: 'assembly',
+                    default: chamber === 'assembly'
+                }, {
+                    label: I18n.getI18n('command.agenda.option.chamber.senate.name', locale),
+                    value: 'senate',
+                    default: chamber === 'senate'
+                }])
+        ), new MessageActionRow().addComponents(
             new MessageButton()
-                .setCustomId(`agenda_button,${moment(date).subtract(1, period).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
+                .setCustomId(`agenda_button,${moment(date).subtract(1, period).format("YYYY-MM-DD")},${chamber},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
                 .setLabel(I18n.getI18n(`command.agenda.reply.${period}.previous`, locale))
                 .setStyle("PRIMARY")
         ).addComponents(
             new MessageButton()
-                .setCustomId(`agenda_button,${moment(date).add(1, period).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
+                .setCustomId(`agenda_button,${moment(date).add(1, period).format("YYYY-MM-DD")},${chamber},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
                 .setLabel(I18n.getI18n(`command.agenda.reply.${period}.next`, locale))
                 .setStyle("PRIMARY")
-        )
+        )];
 
-        return { content: message, files, components: [row] };
+        return { content: message, files, components: rows };
     }
 
-    async agnedaButton(interaction: ButtonInteraction) {
+    async selectChamber(interaction: SelectMenuInteraction) {
         await interaction.deferUpdate();
         const [_, d, p, f] = interaction.customId.split(",");
         const date = moment(d, "YYYY-MM-DD").toDate();
         const period = p as "week" | "day";
+        const chamber = interaction.values[0] as "senate" | "assembly";
         const filter: AgendaFilter = {
             commission: f.includes('C'),
             meetings: f.includes('M'),
             public: f.includes('P')
         };
 
-        await interaction.editReply(await this.messageData(date, period, filter, interaction.locale));
+        await interaction.editReply(await this.messageData(date, chamber, period, filter, interaction.locale));
+    }
+
+    async agnedaButton(interaction: ButtonInteraction) {
+        await interaction.deferUpdate();
+        const [_, d, c, p, f] = interaction.customId.split(",");
+        const date = moment(d, "YYYY-MM-DD").toDate();
+        const period = p as "week" | "day";
+        const chamber = c as "senate" | "assembly";
+        const filter: AgendaFilter = {
+            commission: f.includes('C'),
+            meetings: f.includes('M'),
+            public: f.includes('P')
+        };
+
+        await interaction.editReply(await this.messageData(date, chamber, period, filter, interaction.locale));
     }
 
     async execute(interaction: CommandInteraction) {
@@ -147,6 +184,6 @@ export class AgendaCommand extends Command {
         };
 
         await interaction.deferReply({ ephemeral: true });
-        await interaction.editReply(await this.messageData(date, interaction.options.getSubcommand() as "week" | "day", filter, interaction.locale));
+        await interaction.editReply(await this.messageData(date, interaction.options.getString('chamber') as "assembly" | "senate", interaction.options.getString('period') as "week" | "day", filter, interaction.locale));
     }
 }
