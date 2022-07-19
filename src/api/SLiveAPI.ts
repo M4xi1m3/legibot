@@ -103,29 +103,26 @@ class SLiveAPIManager extends Api {
     }
 
     async streams(): Promise<StreamEntry[]> {
-        return await Cache.cache('s.streams', 15, async () => {
+        return await Cache.cache('s.streams', 30, async () => {
             const lives = await this.lives();
 
             const out: StreamEntry[] = [];
 
             for (const live of lives) {
                 const nvs = await this.nvs(live.url);
-                console.log(nvs.data.files.file);
                 if (nvs.data['@_status'] !== 'live')
                     continue;
 
                 out.push({
                     id: live.flux,
-                    selector: (nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'organes') ?? { '@_value': `Flux ${live.flux}` })['@_value'],
+                    selector: ((nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'organes') ?? nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'categories')) ?? { '@_value': `Flux ${live.flux}` })['@_value'],
                     thumbnail_url: `https://videos.senat.fr/img/video_live_${live.flux}.jpg`,
-                    title: (nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'organes') ?? { '@_label': `Flux ${live.flux}` })['@_label'],
+                    title: decode(((nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'organes') ?? nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'categories')) ?? { '@_label': `Flux ${live.flux}` })['@_label']).replace("<br>", "\n").replace("<br/>", "\n"),
                     description: decode((nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'description') ?? { '@_value': `Pas de description.` })['@_value']).replace("<br>", "\n").replace("<br/>", "\n"),
                     listen_url: (nvs.data.files.file.find((v: any) => v['@_title'] === 'live') ?? { '@_url': undefined })['@_url'],
                     watch_url: `https://videos.senat.fr/video.${live.url}`
                 });
             }
-
-            console.log(out);
 
             return out;
         });
