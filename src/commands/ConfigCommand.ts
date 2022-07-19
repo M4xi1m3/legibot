@@ -60,13 +60,13 @@ export class ConfigCommand extends Command {
 
     async validateCall(interaction: CommandInteraction | SelectMenuInteraction | ButtonInteraction): Promise<boolean> {
         if (interaction.guildId === null) {
-            await interaction.reply({ content: I18n.getI18n('command.config.error.dm', interaction.locale), ephemeral: true });
+            await interaction.reply({ content: I18n.getI18n('command.config.error.dm', I18n.getLang(interaction)), ephemeral: true });
             return false;
         }
 
         if (!interaction.memberPermissions?.any('MANAGE_GUILD', true)
             || !HardConfig.getDiscordGods().includes(interaction.user.id)) {
-            await interaction.reply({ content: I18n.getI18n('command.config.error.permission', interaction.locale), ephemeral: true });
+            await interaction.reply({ content: I18n.getI18n('command.config.error.permission', I18n.getLang(interaction)), ephemeral: true });
             return false;
         }
 
@@ -77,19 +77,19 @@ export class ConfigCommand extends Command {
         return {
             embeds: [
                 new MessageEmbed()
-                    .setTitle(I18n.getI18n('command.config.reply.title', interaction.locale))
-                    .setDescription(I18n.getI18n('command.config.reply.description', interaction.locale))
+                    .setTitle(I18n.getI18n('command.config.reply.title', I18n.getLang(interaction)))
+                    .setDescription(I18n.getI18n('command.config.reply.description', I18n.getLang(interaction)))
             ],
             components: [
                 new MessageActionRow().addComponents(
                     new MessageSelectMenu()
-                        .setPlaceholder(I18n.getI18n('command.config.reply.language', interaction.locale))
+                        .setPlaceholder(I18n.getI18n('command.config.reply.language', I18n.getLang(interaction)))
                         .addOptions(I18n.getLocales(ServerConfig.get(interaction).locale))
                         .setCustomId('config_language')
                 ),
                 new MessageActionRow().addComponents(
                     new MessageButton()
-                        .setLabel(I18n.getI18n(`command.config.reply.ephemeral.${!ServerConfig.get(interaction).ephemeral}`, interaction.locale))
+                        .setLabel(I18n.getI18n(`command.config.reply.ephemeral.${!ServerConfig.get(interaction).ephemeral}`, I18n.getLang(interaction)))
                         .setStyle('PRIMARY')
                         .setCustomId(`config_ephemeral,${!ServerConfig.get(interaction).ephemeral}`)
                 )

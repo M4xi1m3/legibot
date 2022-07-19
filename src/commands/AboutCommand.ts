@@ -38,10 +38,10 @@ export class AboutCommand extends Command {
                     .setTitle(`**LegiBot ${LEGIBOT_VERSION}${LEGIBOT_DEV ? '-dev' : ''} (${LEGIBOT_HASH})**\n`)
                     .setURL(LEGIBOT_REPOSITORY)
                     .setThumbnail('attachment://logo.png')
-                    .setDescription(I18n.getI18n("command.about.embed.description", interaction.locale))
+                    .setDescription(I18n.getI18n("command.about.embed.description", I18n.getLang(interaction)))
                     .addField(
-                        I18n.getI18n("command.about.embed.license.title", interaction.locale),
-                        I18n.getI18n("command.about.embed.license.text", interaction.locale))
+                        I18n.getI18n("command.about.embed.license.title", I18n.getLang(interaction)),
+                        I18n.getI18n("command.about.embed.license.text", I18n.getLang(interaction)))
             ], files: [new MessageAttachment(`doc/logo/logo-transparent${LEGIBOT_DEV ? '-dev' : ''}.png`, 'logo.png')], ephemeral: true
         });
     }

@@ -37,7 +37,7 @@ export class InviteCommand extends Command {
 
     async execute(interaction: CommandInteraction) {
         return interaction.reply({
-            content: `**${I18n.getI18n('command.invite.reply', interaction.locale)}**\n${this.link()}`,
+            content: `**${I18n.getI18n('command.invite.reply', I18n.getLang(interaction))}**\n${this.link()}`,
             ephemeral: true
         });
     }
