@@ -1,4 +1,7 @@
 name,fr,en-US
+locale.name,Français,English (United States)
+locale.flag,🇫🇷,🇺🇸
+,,
 bot.error,Une erreur est survenue lors du traitement de votre {type}.,An error occured while handling your {type}.
 bot.error.god,Vous n'êtes pas un Dieux.,You are not a god.
 ,,
@@ -65,3 +68,14 @@ command.live.joining,J’arrive…,I’m comming…
 command.ping.title,ping,ping
 command.ping.description,Vérifie si LegiBot est vivant.,Checks if LegiBot is alive.
 command.ping.pong,Pong !,Pong!
+,,
+command.config.title,config,config
+command.config.description,Modifier la configuration du serveur.,Edit server config.
+command.config.error.dm,Cette commande ne peut pas être utilisée en DM.,This command can't be used in DM.
+command.config.error.permission,Vous n'avez pas les permissions nécessaires pour utiliser cette commande.,You don't have the required permissions.
+,,
+command.config.reply.title,Configuration,Configuration
+command.config.reply.description,Éditer la configuration serveur,Edit server config
+command.config.reply.language,Langue,Language
+command.config.reply.ephemeral.true,Désactiver les réponses publiques,Disable public replies
+command.config.reply.ephemeral.false,Activer les réponses publiques,Enable public replies

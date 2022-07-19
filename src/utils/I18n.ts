@@ -18,6 +18,7 @@
  */
 
 import { Locale, LocaleString } from "discord-api-types/v9";
+import { MessageSelectOptionData } from "discord.js";
 
 import format from 'string-format';
 import { Command } from "../base/Command";
@@ -25,7 +26,7 @@ import { i18n } from "../i18n";
 
 const DEFAULT_LANGAGE: Locale = Locale.EnglishUS;
 
-export type I18nKey = keyof typeof i18n & string;
+export type I18nKey = (keyof typeof i18n) & string;
 
 class I18nManager {
     getI18nDict(key: I18nKey): { [key in LocaleString]?: string } {
@@ -71,6 +72,20 @@ class I18nManager {
             name: choice,
             name_localizations: I18n.getI18nDict(`command.${command.getName()}.option.${argument}.${choice}.name`),
         }
+    }
+
+    getLocales(selected?: I18nKey): MessageSelectOptionData[] {
+        const names = this.getI18nDict('locale.name');
+        const flags = this.getI18nDict('locale.flag');
+
+        const out: MessageSelectOptionData[] = [];
+
+        return Object.keys(names).map((locale: I18nKey) => ({
+            value: locale,
+            label: names[locale as LocaleString] ?? "",
+            emoji: flags[locale as LocaleString] ?? "",
+            default: selected === locale
+        }));
     }
 }
 
