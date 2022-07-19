@@ -1,5 +1,4 @@
-config/hardconfig.json
-config/softconfig.json
+config/*.json
 node_modules
 cache.json
 *.log

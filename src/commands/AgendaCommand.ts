@@ -24,6 +24,7 @@ import { AgendaEntry, AgendaFilter, ANAgendaAPI } from '../api/ANAgendaAPI';
 import { SAgendaAPI } from '../api/SAgendaAPI';
 import { Command } from '../base/Command';
 import { Bot } from '../Bot';
+import { ServerConfig } from '../config/ServerConfig';
 import { Agenda } from '../utils/Agenda';
 import { I18n } from '../utils/I18n';
 
@@ -145,7 +146,7 @@ export class AgendaCommand extends Command {
             public: f.includes('P')
         };
 
-        await interaction.editReply(await this.messageData(date, chamber, period, filter, interaction.locale));
+        await interaction.editReply(await this.messageData(date, chamber, period, filter, I18n.getLang(interaction)));
     }
 
     async agnedaButton(interaction: ButtonInteraction) {
@@ -160,7 +161,7 @@ export class AgendaCommand extends Command {
             public: f.includes('P')
         };
 
-        await interaction.editReply(await this.messageData(date, chamber, period, filter, interaction.locale));
+        await interaction.editReply(await this.messageData(date, chamber, period, filter, I18n.getLang(interaction)));
     }
 
     async execute(interaction: CommandInteraction) {
@@ -170,7 +171,7 @@ export class AgendaCommand extends Command {
             date = moment(date_string, 'DD/MM/YYYY').toDate();
             if (isNaN(date.getTime())) {
                 interaction.reply({
-                    content: I18n.getI18n("command.agenda.reply.invalid.date", interaction.locale),
+                    content: I18n.getI18n("command.agenda.reply.invalid.date", I18n.getLang(interaction)),
                     ephemeral: true
                 });
                 return;
@@ -183,7 +184,7 @@ export class AgendaCommand extends Command {
             meetings: interaction.options.getBoolean('meetings', false) ?? false
         };
 
-        await interaction.deferReply({ ephemeral: true });
-        await interaction.editReply(await this.messageData(date, interaction.options.getString('chamber') as "assembly" | "senate", interaction.options.getString('period') as "week" | "day", filter, interaction.locale));
+        await interaction.deferReply({ ephemeral: ServerConfig.get(interaction).ephemeral });
+        await interaction.editReply(await this.messageData(date, interaction.options.getString('chamber') as "assembly" | "senate", interaction.options.getString('period') as "week" | "day", filter, I18n.getLang(interaction)));
     }
 }

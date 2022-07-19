@@ -18,16 +18,32 @@
  */
 
 import { Locale, LocaleString } from "discord-api-types/v9";
+import { Interaction, MessageSelectOptionData } from "discord.js";
 
 import format from 'string-format';
 import { Command } from "../base/Command";
+import { ServerConfig } from "../config/ServerConfig";
 import { i18n } from "../i18n";
 
 const DEFAULT_LANGAGE: Locale = Locale.EnglishUS;
 
-export type I18nKey = keyof typeof i18n & string;
+export type I18nKey = (keyof typeof i18n) & string;
 
 class I18nManager {
+    getLang(lang: string | Interaction = DEFAULT_LANGAGE): LocaleString {
+        if (lang instanceof Interaction) {
+            if (lang.guildId === null) {
+                return lang.locale as LocaleString;
+            } else {
+                if (ServerConfig.get(lang.guildId).ephemeral)
+                    return lang.locale as LocaleString;
+                return ServerConfig.get(lang.guildId).locale;
+            }
+        } else {
+            return lang as LocaleString;
+        }
+    }
+
     getI18nDict(key: I18nKey): { [key in LocaleString]?: string } {
         return i18n[key] ?? {};
     }
@@ -44,13 +60,14 @@ class I18nManager {
         return out;
     }
 
-    getI18n(key: I18nKey, lang: string = DEFAULT_LANGAGE): string {
+    getI18n(key: I18nKey, lang: string | Interaction = DEFAULT_LANGAGE): string {
         const dict = this.getI18nDict(key);
 
-        return dict[lang as LocaleString] ?? (dict[DEFAULT_LANGAGE] ?? key);
+
+        return dict[this.getLang(lang)] ?? (dict[DEFAULT_LANGAGE] ?? key);
     }
 
-    formatI18n<T>(key: I18nKey, lang: string, object?: T): string {
+    formatI18n<T>(key: I18nKey, lang: string | Interaction, object?: T): string {
         if (object === undefined)
             return this.getI18n(key, lang);
 
@@ -71,6 +88,20 @@ class I18nManager {
             name: choice,
             name_localizations: I18n.getI18nDict(`command.${command.getName()}.option.${argument}.${choice}.name`),
         }
+    }
+
+    getLocales(selected?: I18nKey): MessageSelectOptionData[] {
+        const names = this.getI18nDict('locale.name');
+        const flags = this.getI18nDict('locale.flag');
+
+        const out: MessageSelectOptionData[] = [];
+
+        return Object.keys(names).map((locale: I18nKey) => ({
+            value: locale,
+            label: names[locale as LocaleString] ?? "",
+            emoji: flags[locale as LocaleString] ?? "",
+            default: selected === locale
+        }));
     }
 }
 

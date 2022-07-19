@@ -35,6 +35,6 @@ export class PingCommand extends Command {
     }
 
     async execute(interaction: CommandInteraction) {
-        interaction.reply({ content: I18n.getI18n('command.ping.pong', interaction.locale), ephemeral: true });
+        interaction.reply({ content: I18n.getI18n('command.ping.pong', I18n.getLang(interaction)), ephemeral: true });
     }
 }

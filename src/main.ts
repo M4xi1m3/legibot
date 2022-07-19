@@ -19,6 +19,7 @@
 
 import { Bot } from './Bot';
 import { HardConfig } from './config/HardConfig';
+import { ServerConfig } from './config/ServerConfig';
 import { SoftConfig } from './config/SoftConfig';
 import { UptimeRobot } from './UptimeRobot';
 import { Logger } from './utils/Logger';
@@ -30,6 +31,7 @@ export const main = async () => {
         Logger.getLogger('Main').warn("This is a developpement build of LegiBot!");
 
     SoftConfig.load();
+    ServerConfig.load();
 
     if (HardConfig.isUptimeRobotEnabled()) {
         const ur = new UptimeRobot();

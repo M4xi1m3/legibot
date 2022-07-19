@@ -23,6 +23,7 @@ import { ANLiveAPI, StreamEntry } from '../api/ANLiveAPI';
 import { SLiveAPI } from '../api/SLiveAPI';
 import { Command } from '../base/Command';
 import { Bot } from '../Bot';
+import { ServerConfig } from '../config/ServerConfig';
 import { Audio } from '../utils/Audio';
 import { Emoji } from '../utils/Emoji';
 import { I18n } from '../utils/I18n';
@@ -75,7 +76,7 @@ export class LiveCommand extends Command {
     private async getMessageData(selected: string | null = null, chamber: 'senate' | 'assembly', locale: string): Promise<MessagePayload | WebhookEditMessageOptions> {
         let streams: StreamEntry[];
         let no_watch = false, no_listen = false;
-        let watch_url = "";
+        let watch_url = "http://discordapp.com/";
         try {
             if (chamber === 'assembly')
                 streams = await ANLiveAPI.streams();
@@ -146,7 +147,7 @@ export class LiveCommand extends Command {
                         embed.setThumbnail(diffusions.thumbnail_url);
                     no_watch = diffusions.watch_url === undefined;
                     no_listen = diffusions.listen_url === undefined;
-                    watch_url = diffusions.watch_url ?? "";
+                    watch_url = diffusions.watch_url ?? 'http://discordapp.com/';
                 }
             }
 
@@ -194,7 +195,7 @@ export class LiveCommand extends Command {
             return;
 
         if (member.voice.channelId === null) {
-            interaction.reply({ content: I18n.getI18n('command.live.error.voice', interaction.locale), ephemeral: true });
+            interaction.reply({ content: I18n.getI18n('command.live.error.voice', I18n.getLang(interaction)), ephemeral: true });
             return;
         }
 
@@ -211,16 +212,16 @@ export class LiveCommand extends Command {
 
             stream = streams.find((v) => v.id === id);
             if (stream === undefined) {
-                interaction.reply({ content: I18n.getI18n('command.live.error.notlive', interaction.locale), ephemeral: true });
+                interaction.reply({ content: I18n.getI18n('command.live.error.notlive', I18n.getLang(interaction)), ephemeral: true });
                 return;
             }
         } catch (e: any) {
-            interaction.reply({ content: I18n.getI18n('command.live.error', interaction.locale), ephemeral: true });
+            interaction.reply({ content: I18n.getI18n('command.live.error', I18n.getLang(interaction)), ephemeral: true });
             return;
         }
 
         if (stream.listen_url === undefined) {
-            interaction.reply({ content: I18n.getI18n('command.live.error.nolisten', interaction.locale), ephemeral: true });
+            interaction.reply({ content: I18n.getI18n('command.live.error.nolisten', I18n.getLang(interaction)), ephemeral: true });
             return;
         }
 
@@ -230,30 +231,30 @@ export class LiveCommand extends Command {
             adapterCreator: member.guild.voiceAdapterCreator,
         });
 
-        interaction.reply({ content: I18n.getI18n('command.live.joining', interaction.locale), ephemeral: true });
+        interaction.reply({ content: I18n.getI18n('command.live.joining', I18n.getLang(interaction)), ephemeral: true });
     }
 
     async selectSeance(interaction: SelectMenuInteraction) {
         await interaction.deferUpdate();
         const select = interaction.values[0];
         const [_, chamber] = interaction.customId.split(",");
-        interaction.editReply(await this.getMessageData(select, chamber as 'senate' | 'assembly', interaction.locale));
+        interaction.editReply(await this.getMessageData(select, chamber as 'senate' | 'assembly', I18n.getLang(interaction)));
     }
 
     async selectChamber(interaction: SelectMenuInteraction) {
         await interaction.deferUpdate();
         const chamber = interaction.values[0];
-        interaction.editReply(await this.getMessageData(null, chamber as 'senate' | 'assembly', interaction.locale));
+        interaction.editReply(await this.getMessageData(null, chamber as 'senate' | 'assembly', I18n.getLang(interaction)));
     }
 
     async reloadSeance(interaction: ButtonInteraction) {
         await interaction.deferUpdate();
         const [_, chamber, flux] = interaction.customId.split(",");
-        interaction.editReply(await this.getMessageData(flux === "null" ? null : flux, chamber as 'senate' | 'assembly', interaction.locale));
+        interaction.editReply(await this.getMessageData(flux === "null" ? null : flux, chamber as 'senate' | 'assembly', I18n.getLang(interaction)));
     }
 
     async execute(interaction: CommandInteraction) {
-        await interaction.deferReply({ ephemeral: true });
-        await interaction.editReply(await this.getMessageData(null, interaction.options.getString("chamber") as 'senate' | 'assembly', interaction.locale));
+        await interaction.deferReply({ ephemeral: ServerConfig.get(interaction).ephemeral });
+        await interaction.editReply(await this.getMessageData(null, interaction.options.getString("chamber") as 'senate' | 'assembly', I18n.getLang(interaction)));
     }
 }
