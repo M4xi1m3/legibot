@@ -97,7 +97,7 @@ class ANLiveAPIManager extends Api {
             const res = await this.load_edito();
 
             if (!res.good) {
-                Promise.reject();
+                return Promise.reject();
             } else {
                 const parsed: any = this.parser.parse(res.data);
 
@@ -156,7 +156,7 @@ class ANLiveAPIManager extends Api {
 
                 out.push({
                     title: diffusion.titre ?? (diffusion.libelle === "" ? diffusion.libelle_court : diffusion.libelle),
-                    description: decode(diffusion.sujet).replace("<br>", "\n").replace("<br/>", "\n"),
+                    description: decode(diffusion.sujet).replaceAll("<br>", "\n").replaceAll("<br/>", "\n"),
                     thumbnail_url: `https://videos.assemblee-nationale.fr/live/images/${diffusion.id_organe}.jpg`,
                     listen_url: `https://videos.assemblee-nationale.fr/live/live${l.flux}/playlist${l.flux}.m3u8`,
                     selector: diffusion.libelle_court,

@@ -93,7 +93,7 @@ class SLiveAPIManager extends Api {
             const res = await this.load_nvs(url);
 
             if (!res.good) {
-                Promise.reject();
+                return Promise.reject();
             } else {
                 const parsed: any = this.parser.parse(res.data);
 
@@ -117,8 +117,8 @@ class SLiveAPIManager extends Api {
                     id: live.flux,
                     selector: ((nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'organes') ?? nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'categories')) ?? { '@_value': `Flux ${live.flux}` })['@_value'],
                     thumbnail_url: `https://videos.senat.fr/img/video_live_${live.flux}.jpg`,
-                    title: decode(((nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'organes') ?? nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'categories')) ?? { '@_label': `Flux ${live.flux}` })['@_label']).replace("<br>", "\n").replace("<br/>", "\n"),
-                    description: decode((nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'description') ?? { '@_value': `Pas de description.` })['@_value']).replace("<br>", "\n").replace("<br/>", "\n"),
+                    title: decode(((nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'organes') ?? nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'categories')) ?? { '@_label': `Flux ${live.flux}` })['@_label']).replaceAll("<br>", "\n").replaceAll("<br/>", "\n"),
+                    description: decode((nvs.data.metadatas.metadata.find((v: any) => v['@_name'] === 'description') ?? { '@_value': `Pas de description.` })['@_value']).replaceAll("<br>", "\n").replaceAll("<br/>", "\n"),
                     listen_url: (nvs.data.files.file.find((v: any) => v['@_title'] === 'live') ?? { '@_url': undefined })['@_url'],
                     watch_url: `https://videos.senat.fr/video.${live.url}`
                 });
