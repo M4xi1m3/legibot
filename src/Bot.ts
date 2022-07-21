@@ -191,9 +191,9 @@ class BotManager {
             this.logger.error("Error when handling " + type + " \"" + name + "\"", e as Error);
             try {
                 if (interaction.deferred)
-                    interaction.editReply({ content: I18n.formatI18n('bot.error', interaction.locale, {type}) });
+                    await interaction.editReply({ content: I18n.formatI18n('bot.error', interaction.locale, {type}) });
                 else
-                    interaction.reply({ content: I18n.formatI18n('bot.error', interaction.locale, {type}), ephemeral: true });
+                    await interaction.reply({ content: I18n.formatI18n('bot.error', interaction.locale, {type}), ephemeral: true });
             } catch (e: any) {
                 this.logger.error("Error when handling error of " + type + " \"" + name + "\"", e as Error);
             }
