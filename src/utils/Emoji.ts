@@ -18,16 +18,18 @@
  */
 
 class EmojiManager {
-    public yes: string;
-    public no: string;
-    public null: string;
-    public refresh: string;
+    public readonly yes: string;
+    public readonly no: string;
+    public readonly null: string;
+    public readonly refresh: string;
+    public readonly delete: string;
 
     constructor() {
         this.yes = '✅';
         this.no = '❎';
         this.null = '🅾';
         this.refresh = '🔄';
+        this.delete = '🗑️';
     }
 
     digitToEmoji(digit: number): string {
