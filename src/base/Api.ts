@@ -18,6 +18,7 @@
  */
 
 import axios from "axios";
+import { serialize } from 'cookie';
 import { Log, Logger } from "../utils/Logger";
 
 export class Api {
@@ -28,10 +29,10 @@ export class Api {
     }
 
 
-    protected async request(method: "GET" | "POST" | "PUT" | "DELETE", path: string, data?: any): Promise<{good: boolean, error: string, status: number, data: any}> {
+    protected async request(method: "GET" | "POST" | "PUT" | "DELETE", path: string, data?: any, cookies?: { [name: string]: string }): Promise<{ good: boolean, error: string, status: number, data: any }> {
         this.logger.info(method + " " + path);
         try {
-            const res = await axios.request({ method: method.toLocaleLowerCase(), url: path, data, headers: { 'Accepts': 'application/json' }});
+            const res = await axios.request({ method: method.toLocaleLowerCase(), url: path, data, headers: { 'Accepts': 'application/json', 'Cookie': cookies !== undefined ? Object.entries(cookies).map(([key, value]) => serialize(key, value)).join("; ") : undefined } });
 
             return {
                 good: true,
