@@ -18,11 +18,12 @@
  */
 
 import { APIApplicationCommandOption, ApplicationCommandOptionType } from 'discord-api-types/v9';
-import { ButtonInteraction, CommandInteraction, GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessagePayload, MessageSelectMenu, MessageSelectOptionData, SelectMenuInteraction, WebhookEditMessageOptions } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, GuildMember, MessageActionRow, MessageButton, MessageEmbed, MessagePayload, MessageSelectMenu, MessageSelectOptionData, SelectMenuInteraction, Snowflake, WebhookEditMessageOptions } from 'discord.js';
 import { ANLiveAPI, StreamEntry } from '../api/ANLiveAPI';
 import { SLiveAPI } from '../api/SLiveAPI';
 import { Command } from '../base/Command';
 import { Bot } from '../Bot';
+import { DeleteButton } from '../components/DeleteButton';
 import { ServerConfig } from '../config/ServerConfig';
 import { Audio } from '../utils/Audio';
 import { Emoji } from '../utils/Emoji';
@@ -73,7 +74,7 @@ export class LiveCommand extends Command {
         return out;
     }
 
-    private async getMessageData(selected: string | null = null, chamber: 'senate' | 'assembly', locale: string): Promise<MessagePayload | WebhookEditMessageOptions> {
+    private async getMessageData(selected: string | null = null, chamber: 'senate' | 'assembly', locale: string, delete_button: boolean, user_id: Snowflake): Promise<MessagePayload | WebhookEditMessageOptions> {
         let streams: StreamEntry[];
         let no_watch = false, no_listen = false;
         let watch_url = "http://discordapp.com/";
@@ -153,7 +154,7 @@ export class LiveCommand extends Command {
 
             return {
                 embeds: [embed], components: [new MessageActionRow().addComponents(
-                    new MessageSelectMenu().setCustomId('live_chamber')
+                    new MessageSelectMenu().setCustomId(`live_chamber,${user_id}`)
                         .setPlaceholder(I18n.getI18n('command.live.option.chamber.description', locale))
                         .addOptions([{
                             label: I18n.getI18n('command.live.option.chamber.assembly.name', locale),
@@ -165,11 +166,11 @@ export class LiveCommand extends Command {
                             default: chamber === 'senate'
                         }])
                 ), new MessageActionRow().addComponents(
-                    new MessageSelectMenu().setCustomId(`live_seance,${chamber}`)
+                    new MessageSelectMenu().setCustomId(`live_seance,${chamber},${user_id}`)
                         .setPlaceholder(I18n.getI18n('command.live.embed.session', locale))
                         .addOptions(selectable ?? [{ label: "ERROR", value: "ERROR" }])
                 ), new MessageActionRow().addComponents(
-                    new MessageButton().setCustomId(`live_listen,${chamber},${selected}`)
+                    new MessageButton().setCustomId(`live_listen,${chamber},${selected},${user_id}`)
                         .setLabel(I18n.getI18n('command.live.embed.listen', locale))
                         .setStyle("PRIMARY")
                         .setDisabled(selected === null || no_listen),
@@ -179,14 +180,13 @@ export class LiveCommand extends Command {
                         .setStyle("LINK")
                         .setDisabled(selected === null || no_watch),
                 ).addComponents(
-                    new MessageButton().setCustomId(`live_reload,${chamber},${selected}`)
+                    new MessageButton().setCustomId(`live_reload,${chamber},${selected},${user_id}`)
                         .setLabel(I18n.getI18n('command.live.embed.refresh', locale))
                         .setStyle("SECONDARY")
                         .setEmoji(Emoji.refresh)
-                )]
+                ).addComponents(delete_button ? [DeleteButton.generate()] : [])]
             };
         }
-
     }
 
     async listenSeance(interaction: ButtonInteraction) {
@@ -237,24 +237,25 @@ export class LiveCommand extends Command {
     async selectSeance(interaction: SelectMenuInteraction) {
         await interaction.deferUpdate();
         const select = interaction.values[0];
-        const [_, chamber] = interaction.customId.split(",");
-        interaction.editReply(await this.getMessageData(select, chamber as 'senate' | 'assembly', I18n.getLang(interaction)));
+        const [_, chamber, user] = interaction.customId.split(",");
+        interaction.editReply(await this.getMessageData(select, chamber as 'senate' | 'assembly', I18n.getLang(interaction), !ServerConfig.get(interaction).ephemeral, user));
     }
 
     async selectChamber(interaction: SelectMenuInteraction) {
         await interaction.deferUpdate();
         const chamber = interaction.values[0];
-        interaction.editReply(await this.getMessageData(null, chamber as 'senate' | 'assembly', I18n.getLang(interaction)));
+        const [_, user] = interaction.customId.split(",");
+        interaction.editReply(await this.getMessageData(null, chamber as 'senate' | 'assembly', I18n.getLang(interaction), !ServerConfig.get(interaction).ephemeral, user));
     }
 
     async reloadSeance(interaction: ButtonInteraction) {
         await interaction.deferUpdate();
-        const [_, chamber, flux] = interaction.customId.split(",");
-        interaction.editReply(await this.getMessageData(flux === "null" ? null : flux, chamber as 'senate' | 'assembly', I18n.getLang(interaction)));
+        const [_, chamber, flux, user] = interaction.customId.split(",");
+        interaction.editReply(await this.getMessageData(flux === "null" ? null : flux, chamber as 'senate' | 'assembly', I18n.getLang(interaction), !ServerConfig.get(interaction).ephemeral, user));
     }
 
     async execute(interaction: CommandInteraction) {
         await interaction.deferReply({ ephemeral: ServerConfig.get(interaction).ephemeral });
-        await interaction.editReply(await this.getMessageData(null, interaction.options.getString("chamber") as 'senate' | 'assembly', I18n.getLang(interaction)));
+        await interaction.editReply(await this.getMessageData(null, interaction.options.getString("chamber") as 'senate' | 'assembly', I18n.getLang(interaction), !ServerConfig.get(interaction).ephemeral, interaction.user.id));
     }
 }

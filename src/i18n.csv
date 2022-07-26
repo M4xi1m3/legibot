@@ -4,6 +4,7 @@ locale.flag,🇫🇷,🇺🇸
 ,,
 bot.error,Une erreur est survenue lors du traitement de votre {type}.,An error occured while handling your {type}.
 bot.error.god,Vous n'êtes pas un Dieux.,You are not a god.
+bot.error.deleterights,Vous n'avez pas les droits pour supprimer ce message.,You don't have the rights to delete this message.
 ,,
 command.about.name,apropos,about
 command.about.description,En apprendre plus sur LegiBot.,Learn more about LegiBot.
