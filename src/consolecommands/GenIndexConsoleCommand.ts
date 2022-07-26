@@ -32,7 +32,8 @@ export class GenIndexConsoleCommand extends ConsoleCommand {
         this.folders = [
             { file: "src/commands", type: "Command", name: "commands" },
             { file: "src/dmcommands", type: "DMCommand", name: "dmcommands" },
-            { file: "src/consolecommands", type: "ConsoleCommand", name: "consolecommands" }
+            { file: "src/consolecommands", type: "ConsoleCommand", name: "consolecommands" },
+            { file: "src/components", type: "Component", name: "components" }
         ];
     }
 

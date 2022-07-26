@@ -23,6 +23,7 @@ import { ButtonInteraction, Client, CommandInteraction, DMChannel, Interaction, 
 import { Command } from './base/Command';
 import { DMCommand } from './base/DMCommand';
 import { commands } from './commands';
+import { components } from './components';
 import { HardConfig } from './config/HardConfig';
 import { SoftConfig } from './config/SoftConfig';
 import { dmcommands } from './dmcommands';
@@ -54,6 +55,24 @@ class BotManager {
         return this.dmcommands;
     }
 
+    private async loadComponents() {
+        this.logger.info("Loading components...");
+
+        for (const ccomponent of components) {
+            const component = new ccomponent();
+
+            if (component.getType() === 'button') {
+                this.registerButton(component.getID(), component.execute);
+            } else if (component.getType() === 'select') {
+                this.registerSelect(component.getID(), component.execute);
+            }
+
+            for (const o of component.getConfigs()) {
+                SoftConfig.registerConfig(o);
+            }
+        }
+    }
+
     private async loadDMCommands() {
         this.logger.info("Loading dm commands...");
 
@@ -83,6 +102,7 @@ class BotManager {
     async registerCommands(guilds_id: string[]) {
         await this.loadDMCommands();
         await this.loadCommands();
+        await this.loadComponents();
 
         const commands: RESTPostAPIApplicationCommandsJSONBody[] = [];
 
@@ -191,9 +211,9 @@ class BotManager {
             this.logger.error("Error when handling " + type + " \"" + name + "\"", e as Error);
             try {
                 if (interaction.deferred)
-                    await interaction.editReply({ content: I18n.formatI18n('bot.error', interaction.locale, {type}) });
+                    await interaction.editReply({ content: I18n.formatI18n('bot.error', interaction.locale, { type }) });
                 else
-                    await interaction.reply({ content: I18n.formatI18n('bot.error', interaction.locale, {type}), ephemeral: true });
+                    await interaction.reply({ content: I18n.formatI18n('bot.error', interaction.locale, { type }), ephemeral: true });
             } catch (e: any) {
                 this.logger.error("Error when handling error of " + type + " \"" + name + "\"", e as Error);
             }
@@ -227,10 +247,12 @@ class BotManager {
     }
 
     registerButton(customId: string, handler: (interaction: ButtonInteraction) => void) {
+        this.logger.info("Registering button " + customId);
         this.buttons[customId] = handler;
     }
 
     registerSelect(customId: string, handler: (interaction: SelectMenuInteraction) => void) {
+        this.logger.info("Registering select " + customId);
         this.selects[customId] = handler;
     }
 }
