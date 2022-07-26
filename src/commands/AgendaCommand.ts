@@ -137,7 +137,7 @@ export class AgendaCommand extends Command {
 
     async selectChamber(interaction: SelectMenuInteraction) {
         await interaction.deferUpdate();
-        const [_, d, p, f, u] = interaction.customId.split(",");
+        const [, d, p, f, u] = interaction.customId.split(",");
         const date = moment(d, "YYYY-MM-DD").toDate();
         const period = p as "week" | "day";
         const chamber = interaction.values[0] as "senate" | "assembly";
@@ -153,7 +153,7 @@ export class AgendaCommand extends Command {
 
     async agnedaButton(interaction: ButtonInteraction) {
         await interaction.deferUpdate();
-        const [_, d, c, p, f, u] = interaction.customId.split(",");
+        const [, d, c, p, f, u] = interaction.customId.split(",");
         const date = moment(d, "YYYY-MM-DD").toDate();
         const period = p as "week" | "day";
         const chamber = c as "senate" | "assembly";

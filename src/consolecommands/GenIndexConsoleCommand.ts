@@ -45,6 +45,7 @@ export class GenIndexConsoleCommand extends ConsoleCommand {
         return "Regenerates the various index.ts files.";
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(args: string[]): Promise<void> {
         for (const path of this.folders) {
             const classes: string[] = [];

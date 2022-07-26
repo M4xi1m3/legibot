@@ -219,7 +219,7 @@ class AgendaManager {
     }
 
     private drawForeground(agenda: OrganizedAgenda, ctx: CanvasRenderingContext2D) {
-        const { start, end } = this.getHourRange(agenda);
+        const { start } = this.getHourRange(agenda);
 
         const splitted = this.split(agenda)
 

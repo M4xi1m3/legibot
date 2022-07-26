@@ -74,6 +74,7 @@ export class GenI18nConsoleCommand extends ConsoleCommand {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(args: string[]): Promise<void> {
         let content = "// AUTO GENERATED\n";
         content += "// Run \"yarn craft gen:i18n\" to update\n";

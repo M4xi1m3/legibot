@@ -33,7 +33,7 @@ export class DeleteButton extends Button {
     }
 
     async execute(interaction: ButtonInteraction): Promise<void> {
-        const [_, user_id] = interaction.customId.split(",");
+        const [, user_id] = interaction.customId.split(",");
         if (user_id === undefined || interaction.user.id === user_id) {
             await interaction.deferUpdate();
             await interaction.deleteReply();

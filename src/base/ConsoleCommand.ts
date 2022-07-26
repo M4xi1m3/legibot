@@ -36,6 +36,7 @@ export class ConsoleCommand {
         return [];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(args: string[]): Promise<void> {
         throw new TypeError('Abstract method "execute" of class "ConsoleCommand" cannot be used directly');
     }

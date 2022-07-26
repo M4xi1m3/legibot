@@ -36,6 +36,7 @@ export class PingConsoleCommand extends ConsoleCommand {
         return "Ping";
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(args: string[]): Promise<void> {
         this.logger.info("ping");
     }

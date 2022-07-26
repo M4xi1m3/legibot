@@ -37,6 +37,7 @@ export class HelpConsoleCommand extends ConsoleCommand {
         return "Get a list of the commands";
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(args: string[]): Promise<void> {
         const comms: [string, string][] = [];
 

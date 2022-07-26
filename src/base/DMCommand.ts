@@ -42,6 +42,7 @@ export class DMCommand {
         return "";
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(message: Message, content: string, args: string[]): Promise<void> {
         throw new TypeError('Abstract method "execute" of class "DMCommand" cannot be used directly');
     }

@@ -49,6 +49,7 @@ export class GenVersionConsoleCommand extends ConsoleCommand {
         return "Regenerates the version.ts file.";
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(args: string[]): Promise<void> {
         let content = "// AUTO GENERATED\n";
         content += "// Run \"yarn craft gen:version\" to update\n";

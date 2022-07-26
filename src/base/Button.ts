@@ -44,7 +44,8 @@ export class Button extends Component {
         return false;
     }
 
-    async execute(interraction: ButtonInteraction): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async execute(interaction: ButtonInteraction): Promise<void> {
         throw new TypeError('Abstract method "execute" of class "Button" cannot be used directly');
     }
 

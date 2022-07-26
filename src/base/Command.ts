@@ -56,7 +56,8 @@ export class Command {
         return false;
     }
 
-    async execute(interraction: CommandInteraction): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async execute(interaction: CommandInteraction): Promise<void> {
         throw new TypeError('Abstract method "execute" of class "Command" cannot be used directly');
     }
 }

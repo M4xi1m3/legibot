@@ -199,7 +199,7 @@ export class LiveCommand extends Command {
             return;
         }
 
-        const [_, chamber, id] = interaction.customId.split(",");
+        const [, chamber, id] = interaction.customId.split(",");
         let stream: StreamEntry | undefined
 
         try {
@@ -237,20 +237,20 @@ export class LiveCommand extends Command {
     async selectSeance(interaction: SelectMenuInteraction) {
         await interaction.deferUpdate();
         const select = interaction.values[0];
-        const [_, chamber, user] = interaction.customId.split(",");
+        const [, chamber, user] = interaction.customId.split(",");
         interaction.editReply(await this.getMessageData(select, chamber as 'senate' | 'assembly', I18n.getLang(interaction), !ServerConfig.get(interaction).ephemeral, user));
     }
 
     async selectChamber(interaction: SelectMenuInteraction) {
         await interaction.deferUpdate();
         const chamber = interaction.values[0];
-        const [_, user] = interaction.customId.split(",");
+        const [, user] = interaction.customId.split(",");
         interaction.editReply(await this.getMessageData(null, chamber as 'senate' | 'assembly', I18n.getLang(interaction), !ServerConfig.get(interaction).ephemeral, user));
     }
 
     async reloadSeance(interaction: ButtonInteraction) {
         await interaction.deferUpdate();
-        const [_, chamber, flux, user] = interaction.customId.split(",");
+        const [, chamber, flux, user] = interaction.customId.split(",");
         interaction.editReply(await this.getMessageData(flux === "null" ? null : flux, chamber as 'senate' | 'assembly', I18n.getLang(interaction), !ServerConfig.get(interaction).ephemeral, user));
     }
 

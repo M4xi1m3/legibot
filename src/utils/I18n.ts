@@ -94,8 +94,6 @@ class I18nManager {
         const names = this.getI18nDict('locale.name');
         const flags = this.getI18nDict('locale.flag');
 
-        const out: MessageSelectOptionData[] = [];
-
         return Object.keys(names).map((locale: I18nKey) => ({
             value: locale,
             label: names[locale as LocaleString] ?? "",

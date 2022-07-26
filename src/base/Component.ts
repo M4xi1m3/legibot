@@ -44,7 +44,8 @@ export class Component {
         return false;
     }
 
-    async execute(interraction: ButtonInteraction | SelectMenuInteraction): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async execute(interaction: ButtonInteraction | SelectMenuInteraction): Promise<void> {
         throw new TypeError('Abstract method "execute" of class "Component" cannot be used directly');
     }
 }
