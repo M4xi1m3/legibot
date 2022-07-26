@@ -17,7 +17,7 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn lint
       - run: yarn build
-      - run: cp package.json yarn.lock doc dist/
+      - run: cp -r package.json yarn.lock doc dist/
       - uses: actions/upload-artifact@master
         with:
           name: dist
