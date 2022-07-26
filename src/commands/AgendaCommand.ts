@@ -18,12 +18,13 @@
  */
 
 import { APIApplicationCommandOption, ApplicationCommandOptionType } from 'discord-api-types/v9';
-import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageAttachment, MessageButton, MessageSelectMenu, SelectMenuInteraction } from 'discord.js';
+import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageAttachment, MessageButton, MessageSelectMenu, SelectMenuInteraction, Snowflake } from 'discord.js';
 import moment from 'moment';
 import { AgendaEntry, AgendaFilter, ANAgendaAPI } from '../api/ANAgendaAPI';
 import { SAgendaAPI } from '../api/SAgendaAPI';
 import { Command } from '../base/Command';
 import { Bot } from '../Bot';
+import { DeleteButton } from '../components/DeleteButton';
 import { ServerConfig } from '../config/ServerConfig';
 import { Agenda } from '../utils/Agenda';
 import { I18n } from '../utils/I18n';
@@ -80,7 +81,7 @@ export class AgendaCommand extends Command {
         }]
     }
 
-    private async messageData(date: Date, chamber: 'senate' | 'assembly', period: "week" | "day", filter: AgendaFilter, locale: string) {
+    private async messageData(date: Date, chamber: 'senate' | 'assembly', period: "week" | "day", filter: AgendaFilter, locale: string, delete_button: boolean, user_id: Snowflake) {
         let message = '';
         let agenda: AgendaEntry[] = [];
         if (chamber === 'senate') {
@@ -108,7 +109,7 @@ export class AgendaCommand extends Command {
         }
 
         const rows = [new MessageActionRow().addComponents(
-            new MessageSelectMenu().setCustomId(`agenda_chamber,${moment(date).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
+            new MessageSelectMenu().setCustomId(`agenda_chamber,${moment(date).format("YYYY-MM-DD")},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""},${user_id}`)
                 .setPlaceholder(I18n.getI18n('command.agenda.option.chamber.description', locale))
                 .addOptions([{
                     label: I18n.getI18n('command.agenda.option.chamber.assembly.name', locale),
@@ -121,22 +122,22 @@ export class AgendaCommand extends Command {
                 }])
         ), new MessageActionRow().addComponents(
             new MessageButton()
-                .setCustomId(`agenda_button,${moment(date).subtract(1, period).format("YYYY-MM-DD")},${chamber},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
+                .setCustomId(`agenda_button,${moment(date).subtract(1, period).format("YYYY-MM-DD")},${chamber},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""},${user_id}`)
                 .setLabel(I18n.getI18n(`command.agenda.reply.${period}.previous`, locale))
                 .setStyle("PRIMARY")
         ).addComponents(
             new MessageButton()
-                .setCustomId(`agenda_button,${moment(date).add(1, period).format("YYYY-MM-DD")},${chamber},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""}`)
+                .setCustomId(`agenda_button,${moment(date).add(1, period).format("YYYY-MM-DD")},${chamber},${period},${filter.commission ? "C" : ""}${filter.meetings ? "M" : ""}${filter.public ? "P" : ""},${user_id}`)
                 .setLabel(I18n.getI18n(`command.agenda.reply.${period}.next`, locale))
                 .setStyle("PRIMARY")
-        )];
+        ).addComponents(delete_button ? [DeleteButton.generate()] : [])];
 
         return { content: message, files, components: rows };
     }
 
     async selectChamber(interaction: SelectMenuInteraction) {
         await interaction.deferUpdate();
-        const [_, d, p, f] = interaction.customId.split(",");
+        const [_, d, p, f, u] = interaction.customId.split(",");
         const date = moment(d, "YYYY-MM-DD").toDate();
         const period = p as "week" | "day";
         const chamber = interaction.values[0] as "senate" | "assembly";
@@ -145,13 +146,14 @@ export class AgendaCommand extends Command {
             meetings: f.includes('M'),
             public: f.includes('P')
         };
+        const user = u as Snowflake;
 
-        await interaction.editReply(await this.messageData(date, chamber, period, filter, I18n.getLang(interaction)));
+        await interaction.editReply(await this.messageData(date, chamber, period, filter, I18n.getLang(interaction), !ServerConfig.get(interaction).ephemeral, user));
     }
 
     async agnedaButton(interaction: ButtonInteraction) {
         await interaction.deferUpdate();
-        const [_, d, c, p, f] = interaction.customId.split(",");
+        const [_, d, c, p, f, u] = interaction.customId.split(",");
         const date = moment(d, "YYYY-MM-DD").toDate();
         const period = p as "week" | "day";
         const chamber = c as "senate" | "assembly";
@@ -160,8 +162,9 @@ export class AgendaCommand extends Command {
             meetings: f.includes('M'),
             public: f.includes('P')
         };
+        const user = u as Snowflake;
 
-        await interaction.editReply(await this.messageData(date, chamber, period, filter, I18n.getLang(interaction)));
+        await interaction.editReply(await this.messageData(date, chamber, period, filter, I18n.getLang(interaction), !ServerConfig.get(interaction).ephemeral, user));
     }
 
     async execute(interaction: CommandInteraction) {
@@ -185,6 +188,6 @@ export class AgendaCommand extends Command {
         };
 
         await interaction.deferReply({ ephemeral: ServerConfig.get(interaction).ephemeral });
-        await interaction.editReply(await this.messageData(date, interaction.options.getString('chamber') as "assembly" | "senate", interaction.options.getString('period') as "week" | "day", filter, I18n.getLang(interaction)));
+        await interaction.editReply(await this.messageData(date, interaction.options.getString('chamber') as "assembly" | "senate", interaction.options.getString('period') as "week" | "day", filter, I18n.getLang(interaction), !ServerConfig.get(interaction).ephemeral, interaction.user.id));
     }
 }
