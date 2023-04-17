@@ -51,9 +51,9 @@ export class CacheInfoDMCommand extends DMCommand {
             .setDescription("Size: " + this.humanSize(Cache.getCacheSize()));
         const cache_infos = Cache.getInfos();
         if (cache_infos.length !== 0) {
-            embed.addField('Name', cache_infos.map((e) => e.key).join("\n"), true)
-                .addField('Size', cache_infos.map((e) => this.humanSize(e.size)).join("\n"), true)
-                .addField('Expiration', cache_infos.map((e) => e.expires < Date.now() ? "Expired" : new Date(e.expires).toLocaleString()).join("\n"), true);
+            embed.addFields({ name: 'Name', value: cache_infos.map((e) => e.key).join("\n"), inline: true })
+                .addFields({ name: 'Size', value: cache_infos.map((e) => this.humanSize(e.size)).join("\n"), inline: true })
+                .addFields({ name: 'Expiration', value: cache_infos.map((e) => e.expires < Date.now() ? "Expired" : new Date(e.expires).toLocaleString()).join("\n"), inline: true });
         }
         message.reply({ embeds: [embed] });
     }

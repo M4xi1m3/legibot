@@ -231,11 +231,11 @@ class BotManager {
 
 
             let channels = await guild.channels.fetch();
-            channels = channels.filter(channel => (channel.type === 'GUILD_VOICE' && channel.members.has(guild?.client?.user?.id + '')))
+            channels = channels.filter(channel => (channel?.type === 'GUILD_VOICE' && channel?.members.has(guild?.client?.user?.id + '')))
 
             if (channels.size !== 0) {
                 const channel = channels.first();
-                if (channel !== undefined && channel.members.size <= 1) {
+                if (channel !== undefined && (channel?.members.size ?? 0) <= 1) {
                     Audio.leave(guild.id);
                 }
             }
