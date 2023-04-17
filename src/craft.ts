@@ -38,7 +38,7 @@ class Craft {
             }
         }
 
-        if (commands === [])
+        if (commands.length === 0)
             this.logger.fatal(`Command "${name}" doesn't exist. Please run "yarn craft help" to get a list of available commands.`);
 
         return commands as ConsoleCommand[];

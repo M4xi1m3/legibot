@@ -39,9 +39,10 @@ export class AboutCommand extends Command {
                     .setURL(LEGIBOT_REPOSITORY)
                     .setThumbnail('attachment://logo.png')
                     .setDescription(I18n.getI18n("command.about.embed.description", I18n.getLang(interaction)))
-                    .addField(
-                        I18n.getI18n("command.about.embed.license.title", I18n.getLang(interaction)),
-                        I18n.getI18n("command.about.embed.license.text", I18n.getLang(interaction)))
+                    .addFields({
+                        name: I18n.getI18n("command.about.embed.license.title", I18n.getLang(interaction)),
+                        value: I18n.getI18n("command.about.embed.license.text", I18n.getLang(interaction))
+                    })
             ], files: [new MessageAttachment(`doc/logo/logo-transparent${LEGIBOT_DEV ? '-dev' : ''}.png`, 'logo.png')], ephemeral: true
         });
     }

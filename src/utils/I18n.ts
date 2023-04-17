@@ -48,12 +48,12 @@ class I18nManager {
         return i18n[key] ?? {};
     }
 
-    formatI18nDict<T>(key: I18nKey, object: T): { [key in LocaleString]?: string } {
+    formatI18nDict<T extends { [k: string]: any; }>(key: I18nKey, object: T): { [key in LocaleString]?: string } {
         const dict = this.getI18nDict(key);
 
         const out: { [key in LocaleString]?: string } = {};
 
-        for(const lang of (Object.keys(dict) as LocaleString[])) {
+        for (const lang of (Object.keys(dict) as LocaleString[])) {
             out[lang] = format(dict[lang] as string, object);
         }
 
@@ -67,7 +67,7 @@ class I18nManager {
         return dict[this.getLang(lang)] ?? (dict[DEFAULT_LANGAGE] ?? key);
     }
 
-    formatI18n<T>(key: I18nKey, lang: string | Interaction, object?: T): string {
+    formatI18n<T extends { [k: string]: any; }>(key: I18nKey, lang: string | Interaction, object?: T): string {
         if (object === undefined)
             return this.getI18n(key, lang);
 
